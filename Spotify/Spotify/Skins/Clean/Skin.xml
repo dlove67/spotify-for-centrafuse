@@ -18,6 +18,10 @@
     <BUTTONIMAGE id="dynamicButtonOn" path="dynamicButtonOn.png" />
     <BUTTONIMAGE id="clearAll" path="clearAll.png" />
     <BUTTONIMAGE id="clearAllDown" path="clearAllDown.png" />
+    <BUTTONIMAGE id="offline" path="offline.png" />
+    <BUTTONIMAGE id="offlineDown" path="offlineDown.png" />
+    <BUTTONIMAGE id="online" path="online.png" />
+    <BUTTONIMAGE id="onlineDown" path="onlineDown.png" />
   </BUTTONIMAGES>
   <SECTIONS>
     <SECTION id="Main" effect="ToApp" bounds="0;88;800;304" off="Main_Off" down="Main_On">
@@ -60,14 +64,18 @@
               </TEMPLATE>
               <TEMPLATE id="spotifyPlaylists" selectable="true" layout="Stacked" baseSize="446;240" scrollbarStyleId="Scrollbar">
                 <ITEMGROUP type="Default" size="446;60">
-                  <ITEM id="Name" type="Text" position="7;14" size="439;21" dataSource="Name" styleId="Title" />
-                  <ITEM id="Description" type="Text" position="10;32" size="436;21" dataSource="Description" styleId="Description" />
+                  <ITEM id="Name" type="Text" position="7;14" size="353;21" dataSource="Name" styleId="Title" />
+                  <ITEM id="Description" type="Text" position="10;32" size="350;21" dataSource="Description" styleId="Description" />
+                  <ITEM id="OfflineAvailabilityIcon" type="Image" position="410;15" size="30;30" linkId="" dataSource="OfflineStatus{[value].png}" styleId="Image.Fit" />
+                  <ITEM id="DownloadingStatus" type="Text" position="365;20" size="40;21" dataSource="DownloadingStatus" styleId="Description" />
                   <ITEM id="Line" type="Image" position="0;59" size="446;1" dataSource="cache:Separator.png" styleId="Image.Fit" />
                 </ITEMGROUP>
                 <ITEMGROUP type="Selected" size="446;60">
                   <ITEM id="Background" type="Image" position="2;0" size="444;60" dataSource="cache:SelectionBar.png" styleId="Image.Fit" />
-                  <ITEM id="Name" type="Text" position="7;14" size="439;21" dataSource="Name" styleId="Title.Selected" />
-                  <ITEM id="Description" type="Text" position="10;32" size="436;21" dataSource="Description" styleId="Description.Selected" />
+                  <ITEM id="Name" type="Text" position="7;14" size="353;21" dataSource="Name" styleId="Title.Selected" />
+                  <ITEM id="OfflineAvailabilityIcon" type="Image" position="410;15" size="30;30" linkId="" dataSource="OfflineStatus{[value].png}" styleId="Image.Fit" />
+                  <ITEM id="DownloadingStatus" type="Text" position="365;20" size="40;21" dataSource="DownloadingStatus" styleId="Description.Selected" />
+                  <ITEM id="Description" type="Text" position="10;32" size="350;21" dataSource="Description" styleId="Description.Selected" />
                   <ITEM id="Line" type="Image" position="0;59" size="446;1" dataSource="cache:Separator.png" styleId="Image.Fit" />
                 </ITEMGROUP>
               </TEMPLATE>
@@ -101,10 +109,11 @@
         <CONTROL type="PictureBox" id="pictureBox" bounds="653;12;113;113" image="" background="False" />
         <CONTROL type="Button" id="Spotify.UpButton" bounds="546;2;81;149" effect="" tabindex="0" enabled="true" cmlaction="Spotify.ScrollUp" />
         <CONTROL type="Button" id="Spotify.DownButton" bounds="546;152;81;149" effect="" tabindex="0" enabled="true" cmlaction="Spotify.ScrollDown" />
-        <CONTROL type="DynButton" id="DynamicButton1" bounds="653;145;113;68" effect="" tabindex="0" enabled="true" cmlaction="Spotify.DynamicButton1" down="addSelectedDown" off="addSelected" holdcmlaction="Spotify.DynamicButton1Hold" holdtime="2" />
-        <CONTROL type="DynButton" id="DynamicButton2" bounds="652;225;113;68" effect="" tabindex="0" enabled="true" cmlaction="Spotify.DynamicButton2" down="addAllDown" off="addAll" holdcmlaction="Spotify.DynamicButton2Hold" holdtime="2" />
+        <CONTROL type="DynButton" id="DynamicButton1" bounds="653;200;113;40" effect="" tabindex="0" enabled="true" cmlaction="Spotify.DynamicButton1" down="addSelectedDown" off="addSelected" holdcmlaction="Spotify.DynamicButton1Hold" holdtime="2" />
+        <CONTROL type="DynButton" id="DynamicButton2" bounds="652;250;113;40" effect="" tabindex="0" enabled="true" cmlaction="Spotify.DynamicButton2" down="addAllDown" off="addAll" holdcmlaction="Spotify.DynamicButton2Hold" holdtime="2" />
         <CONTROL type="Label" id="LocationLabel" bounds="165;12;375;29" fontclass="LabelFont" fontstyle="style:bold;" textenable="True" />
         <CONTROL type="Button" id="Spotify.Back" bounds="97;5;63;42" effect="" tabindex="0" enabled="true" cmlaction="Spotify.Back" />
+        <CONTROL type="DynButton" id="DynamicButton3" bounds="653;150;113;40" effect="" tabindex="0" enabled="true" off="offline" down="offlineDown" cmlaction="Spotify.DynamicButton3" />
       </CONTROLS>
     </SECTION>
   </SECTIONS>

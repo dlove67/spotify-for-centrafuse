@@ -296,6 +296,15 @@ namespace SpotiFire.SpotifyLib
         /// <returns>A user. The object is owned by the session so the caller should not release it.</returns>
         [DllImport("libspotify")]
         internal static extern IntPtr sp_session_friend(IntPtr sessionPtr, int index);
+
+        /// <summary>
+        /// Get currently logged in users country
+        /// updated the offline_status_updated() callback will be invoked.
+        /// </summary>
+        /// <param name="sessionPtr">Session object</param>
+        /// <returns>Country encoded in an integer 'SE' = 'S' << 8 | 'E'</returns>
+        [DllImport("libspotify")]
+        internal static extern int sp_session_user_country(IntPtr sessionPtr);
         #endregion
 
         #region Links (Spotify URIs)
@@ -307,6 +316,16 @@ namespace SpotiFire.SpotifyLib
         /// <returns>A link object representing the artist.</returns>
         [DllImport("libspotify")]
         internal static extern IntPtr sp_link_create_from_artist(IntPtr artistPtr);
+
+        /// <summary>
+        /// Creates a link object from a track.
+        /// </summary>
+        /// <remarks>You need to release the link when you are done with it.</remarks>
+        /// <param name="trackPtr">The track.</param>
+        /// <param name="offset">The offset</param>
+        /// <returns>A link object representing the track.</returns>
+        [DllImport("libspotify")]
+        internal static extern IntPtr sp_link_create_from_track(IntPtr trackPtr, int offset);
 
         /// <summary>
         /// Create a string representation of the given Spotify link.
@@ -1607,6 +1626,7 @@ namespace SpotiFire.SpotifyLib
         #endregion
 
         #region Structs
+        [StructLayout(LayoutKind.Sequential)]
         internal struct sp_session_config
         {
             internal int api_version;
@@ -1678,7 +1698,23 @@ namespace SpotiFire.SpotifyLib
         INDEX_OUT_OF_RANGE = 14,
         USER_NEEDS_PREMIUM = 15,
         OTHER_TRANSIENT = 16,
-        IS_LOADING = 17
+        IS_LOADING = 17,
+        NO_STREAM_AVAILABLE = 18,
+        PERMISSION_DENIED = 19,
+        INBOX_IS_FULL = 20,
+        NO_CACHE = 21,
+        NO_SUCH_USER = 22,
+        NO_CREDENTIALS = 23,
+        NETWORK_DISABLED = 24,
+        INVALID_DEVICE_ID = 25,
+        CANT_OPEN_TRACE_FILE = 26,
+        APPLICATION_BANNED = 27,
+        OFFLINE_TOO_MANY_TRACKS = 31,
+        OFFLINE_DISK_CACHE = 32,
+        OFFLINE_EXPIRED = 33,
+        OFFLINE_NOT_ALLOWED = 34,
+        OFFLINE_LICENSE_LOST = 35,
+        OFFLINE_LICENSE_ERROR = 36 
     }
 
     public enum sp_connectionstate

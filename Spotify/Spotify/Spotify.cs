@@ -8,6 +8,7 @@ using System.Data;
 using System.Windows.Forms;
 using System.Threading;
 using System.IO;
+using System.ComponentModel;
 
 namespace Spotify
 {
@@ -144,7 +145,7 @@ namespace Spotify
                                     }
 
                                     var resultTable = LoadTracksIntoTable(tracks);
-                                    TableStates.Peek().Position = MainTableBindingSource.Position;
+                                    TableStates.Peek().Position = table.Rows.IndexOf(row);
                                     TableStates.Peek().ImageID = currentImageId;
                                     SwitchToTab(CurrentTab, GroupingType.Songs, resultTable, album.Name, album.CoverId, false);
                                 }
@@ -162,9 +163,9 @@ namespace Spotify
                                         CF_systemCommand(CF_Actions.HIDEINFO);
                                     }
 
-                                    var albums = artistBrowser.Albums.ToArray();
+                                    var albums = artistBrowser.Albums;
                                     var resultTable = LoadAlbumsIntoTable(albums);
-                                    TableStates.Peek().Position = MainTableBindingSource.Position;
+                                    TableStates.Peek().Position = table.Rows.IndexOf(row);
                                     TableStates.Peek().ImageID = currentImageId;
                                     SwitchToTab(CurrentTab, GroupingType.Albums, resultTable, artist.Name, artistBrowser.PortraitIds.FirstOrDefault(), false);
                                 }
@@ -182,13 +183,31 @@ namespace Spotify
                                     }
                                 }
                                 var resultTable = LoadTracksIntoTable(tracks);
-                                TableStates.Peek().Position = MainTableBindingSource.Position;
+                                TableStates.Peek().Position = table.Rows.IndexOf(row);
                                 TableStates.Peek().ImageID = currentImageId;
                                 SwitchToTab(CurrentTab, GroupingType.Songs, resultTable, playlist.Name, playlist.ImageId, false);
+
+                                SetupDynamicButton3(playlist);
                             }
                             break;
                     }
                 }
+            }
+        }
+
+        private void SetupDynamicButton3(IPlaylist playlist)
+        {
+            var button3 = buttonArray[CF_getButtonID("DynamicButton3")];
+            button3.buttonEnabled = true;
+            if (playlist.OfflineStatus == PlaylistOfflineStatus.No)
+            {
+                button3.offimage = "offline";
+                button3.downimage = "offlineDown";
+            }
+            else
+            {
+                button3.offimage = "online";
+                button3.downimage = "onlineDown";
             }
         }
 
@@ -206,6 +225,12 @@ namespace Spotify
             CF_setButtonOff(BUTTON_INBOX);
             CF_setButtonOff(BUTTON_POPULAR);
             CF_setButtonOff(BUTTON_SEARCH);
+
+            if(currentPlaylistworker != null)
+            {
+                currentPlaylistworker.CancelAsync();
+                currentPlaylistworker = null;
+            }
 
             SetupDynamicButtons(tab);
             
@@ -263,6 +288,85 @@ namespace Spotify
 
             if(CurrentTab != Tabs.NowPlaying)
                 LoadImage(imageId);
+
+            if (CurrentGroupingType == GroupingType.Playlists)
+            {
+                CheckAndStartPlaylistTimer();
+            }
+        }
+
+        BackgroundWorker currentPlaylistworker;
+        private void CheckAndStartPlaylistTimer()
+        {
+            //assume that we are in playlist grouping
+            var table = MainTableBindingSource.DataSource as DataTable;
+            bool needsStarting = table.Rows.Cast<DataRow>().Any(row =>
+                {
+                    var playlist = row["PlaylistObject"] as IPlaylist;
+                    return playlist.OfflineStatus == PlaylistOfflineStatus.Downloading || playlist.OfflineStatus == PlaylistOfflineStatus.Waiting;
+                });
+            
+            if (needsStarting)
+            {
+                if (currentPlaylistworker != null)
+                {
+                    currentPlaylistworker.CancelAsync();
+                    currentPlaylistworker = null;
+                }
+
+                currentPlaylistworker = new BackgroundWorker();
+                currentPlaylistworker.WorkerSupportsCancellation = true;
+                currentPlaylistworker.DoWork += new DoWorkEventHandler(currentPlaylistworker_DoWork);
+                currentPlaylistworker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(currentPlaylistworker_RunWorkerCompleted);
+                currentPlaylistworker.RunWorkerAsync();
+            }
+        }
+
+        void currentPlaylistworker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            (sender as BackgroundWorker).Dispose();
+        }
+
+        void currentPlaylistworker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            try
+            {
+                while (true)
+                {
+                    bool keepGoing = false;
+                    this.Invoke(new MethodInvoker(delegate()
+                        {
+                            if (CurrentGroupingType == GroupingType.Playlists)
+                            {
+                                int position = MainTableBindingSource.Position;
+                                var table = MainTableBindingSource.DataSource as DataTable;
+                                foreach (DataRow row in table.Rows)
+                                {
+                                    var playlist = row["PlaylistObject"] as IPlaylist;
+                                    row["OfflineStatus"] = GetStatusString(playlist);
+                                    row["DownloadingStatus"] = GetDownloadingStatusString(playlist);
+                                    if (playlist.OfflineStatus == PlaylistOfflineStatus.Waiting || playlist.OfflineStatus == PlaylistOfflineStatus.Downloading)
+                                    {
+                                        keepGoing = true;
+                                    }
+                                }
+                            }
+                        }));
+                    if (!keepGoing || e.Cancel)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        Thread.Sleep(1000);
+                    }
+                }
+            }
+            catch 
+            {
+                //there's a potential for synchronicity errors. nobody cares though, just abort
+            }
+            
         }
 
         private string GetCurrentStateStackText()
@@ -290,30 +394,27 @@ namespace Spotify
         {
             var button1 = buttonArray[CF_getButtonID("DynamicButton1")];
             var button2 = buttonArray[CF_getButtonID("DynamicButton2")];
-            switch (tab)
+            var button3 = buttonArray[CF_getButtonID("DynamicButton3")];
+            button3.buttonEnabled = false; //the button will be set up by the calling method
+
+            if (tab == Tabs.NowPlaying)
             {
-                case Tabs.NowPlaying:
-                    {
-                        button1.buttonEnabled = true;
-                        button1.offimage = "clearAll";
-                        button1.downimage = "clearAllDown";
+                button1.buttonEnabled = true;
+                button1.offimage = "clearAll";
+                button1.downimage = "clearAllDown";
 
-                        button2.buttonEnabled = false;
-                    }
-                    break;
-                case Tabs.Inbox: case Tabs.Playlists: case Tabs.Popular: case Tabs.Search:
-                    {
-                        button1.buttonEnabled = button2.buttonEnabled = true;
-                        
-                        button1.offimage = "addSelected";
-                        button1.downimage = "addSelectedDown";
+                button2.buttonEnabled = false;
+                button3.buttonEnabled = false;
+            }
+            else if (tab == Tabs.Inbox || tab == Tabs.Playlists || tab == Tabs.Popular || tab == Tabs.Search)
+            {
+                button1.buttonEnabled = button2.buttonEnabled = true;
 
-                        button2.offimage = "addAll";
-                        button2.downimage = "addAllDown";
-                    }
-                    break;
-                default:
-                    throw new Exception("Unrecognized tab type: " + tab.ToString());
+                button1.offimage = "addSelected";
+                button1.downimage = "addSelectedDown";
+
+                button2.offimage = "addAll";
+                button2.downimage = "addAllDown";
             }
             this.Invalidate();
         }
@@ -377,7 +478,7 @@ namespace Spotify
                 SpotifySession.SetPrefferedBitrate(preferredBitrate);
                 DistributeSessionForSubscription(SpotifySession);
             }
-            if (SpotifySession.ConnectionState != sp_connectionstate.LOGGED_IN)
+            if (!loginComplete)
             {
                 LoadSettings();
                 CF_systemCommand(CF_Actions.SHOWINFO, "Logging in");
@@ -430,7 +531,11 @@ namespace Spotify
                 {
                     SpotifySession.Logout();
                 }
-                SpotifySession.Dispose();
+                try
+                {
+                    SpotifySession.Dispose();
+                }
+                catch { }
             }
         }
 
@@ -569,7 +674,7 @@ namespace Spotify
                         OnDynamic1Hold();
                     }
                     return true;
-                case "Spotify.DynamicBUtton2Hold":
+                case "Spotify.DynamicButton2Hold":
                     if (state >= CF_ButtonState.HoldClick)
                     {
                         OnDynamic2Hold();
@@ -580,6 +685,14 @@ namespace Spotify
                         if (state >= CF_ButtonState.Click)
                         {
                             OnBackClicked();
+                        }
+                    }
+                    return true;
+                case "Spotify.DynamicButton3":
+                    {
+                        if (state >= CF_ButtonState.Click)
+                        {
+                            OnDynamic3Clicked();
                         }
                     }
                     return true;
@@ -606,6 +719,7 @@ namespace Spotify
                     return base.CF_pluginCMLCommand(command, strparams, state, zone);
             }
         }
+
 
         private void OnBackClicked()
         {
@@ -652,7 +766,8 @@ namespace Spotify
 
         private string GetCurrentTrackPosition()
         {
-            return string.Empty; //TODO: figure out how to do positions
+            var timespan = player.Position;
+            return string.Format(timeFormat, timespan.Minutes, timespan.Seconds);
         }
 
         private const string timeFormat = "{0}:{1:00}";
@@ -808,6 +923,32 @@ namespace Spotify
         {
         }
 
+        private void OnDynamic3Clicked()
+        {
+            if (TableStates.Count >= 2)
+            {
+                var state = TableStates.ElementAt(1); //stack enumerator is reversed
+                var row = state.Table.Rows[state.Position];
+                var playlist = row["PlaylistObject"] as IPlaylist;
+                if (playlist.OfflineStatus == PlaylistOfflineStatus.No)
+                {
+                    var result = CF_systemDisplayDialog(CF_Dialogs.YesNo, "Would you like to make this playlist available offline?");
+                    if (result == System.Windows.Forms.DialogResult.OK || result == System.Windows.Forms.DialogResult.Yes)
+                    {
+                        playlist.SetOfflineMode(true);
+                    }
+                }
+                else
+                {
+                    var result = CF_systemDisplayDialog(CF_Dialogs.YesNo, "This playlist will no longer be available offline. Proceed?");
+                    if (result == System.Windows.Forms.DialogResult.OK || result == System.Windows.Forms.DialogResult.Yes)
+                    {
+                        playlist.SetOfflineMode(false);
+                    }
+                }
+                SetupDynamicButton3(playlist);
+            }
+        }
 
         private void AppendTracks(IEnumerable<ITrack> tracks)
         {
@@ -849,11 +990,26 @@ namespace Spotify
             return string.Join(", ", artists.Select(a => a.Name).ToArray());
         }
 
-        private bool CheckConnected()
+        private bool CheckLoggedIn()
         {
-            if (SpotifySession == null || !loggedIn)
+            if (SpotifySession == null || !loginComplete)
             {
                 CF_displayMessage("You are not logged in");
+                return false;
+            }
+            return true;
+        }
+
+        private bool CheckLoggedInAndOnline()
+        {
+            if (SpotifySession == null || !loginComplete)
+            {
+                CF_displayMessage("You are not logged in");
+                return false;
+            }
+            if (!this.CF_getConnectionStatus())
+            {
+                CF_displayMessage("You need to be online");
                 return false;
             }
             return true;

@@ -21,39 +21,47 @@ namespace Spotify
 
         void session_LogoutComplete(ISession sender, SessionEventArgs e)
         {
-            loggedIn = false;
+            loginComplete = false;
         }
 
         void session_PlayTokenLost(ISession sender, SessionEventArgs e)
         {
-            CF_displayMessage("Play token lost! What do we do???" + Environment.NewLine + e.Status.ToString() + Environment.NewLine + e.Message);
+            this.BeginInvoke(new MethodInvoker(delegate()
+                {
+                    CF_displayMessage("Play token lost! What do we do???" + Environment.NewLine + e.Status.ToString() + Environment.NewLine + e.Message);
+                }));
         }
 
         void session_Exception(ISession sender, SessionEventArgs e)
         {
-            WriteError(e.Message);
-            CF_displayMessage(e.Status.ToString() + Environment.NewLine + e.Message);
+            this.BeginInvoke(new MethodInvoker(delegate()
+                {
+                    WriteError(e.Message);
+                    CF_displayMessage(e.Status.ToString() + Environment.NewLine + e.Message);
+                }));
         }
 
         void session_ConnectionError(ISession sender, SessionEventArgs e)
         {
-            loggedIn = false; //is this necessary?
-            CF_displayMessage("Connection Error: "+ Environment.NewLine + e.Status.ToString() + Environment.NewLine + e.Message);
+            
         }
 
         void session_MessageToUser(ISession sender, SessionEventArgs e)
         {
-            CF_displayMessage(e.Message);
+            this.BeginInvoke(new MethodInvoker(delegate()
+                {
+                    CF_displayMessage(e.Message);
+                }));
         }
 
-        bool loggedIn = false;
+        bool loginComplete = false;
         void session_LoginComplete(ISession sender, SessionEventArgs e)
         {
             this.BeginInvoke(new MethodInvoker(() =>
                 {
                     if (e.Status != sp_error.OK)
                     {
-                        CF_displayMessage("Login Failed: " + e.Message);
+                        CF_displayMessage("Login Failed: " + e.Status + Environment.NewLine + e.Message);
                     }
                     else
                     {
@@ -64,8 +72,11 @@ namespace Spotify
 
         private void OnLoginComplete()
         {
-            loggedIn = true;
-            CF_systemCommand(centrafuse.Plugins.CF_Actions.HIDEINFO);
+            this.BeginInvoke(new MethodInvoker(delegate()
+                {
+                    loginComplete = true;
+                    CF_systemCommand(centrafuse.Plugins.CF_Actions.HIDEINFO);
+                }));
         }
 
         

@@ -187,6 +187,32 @@ namespace SpotiFire.SpotifyLib
             {
                 get { IsAlive(true); return playlist.PendingChanges; }
             }
+
+
+            public PlaylistOfflineStatus OfflineStatus
+            {
+                get { IsAlive(true); return playlist.OfflineStatus; }
+            }
+
+            public void SetOfflineMode(bool offline)
+            {
+                IsAlive(true);
+                playlist.SetOfflineMode(offline);
+            }
+
+            public int OfflineDownloadProgress
+            {
+                get
+                {
+                    IsAlive(true);
+                    return playlist.OfflineDownloadProgress;
+                }
+            }
+
+            public bool IsLoaded
+            {
+                get { IsAlive(true); return playlist.IsLoaded; }
+            }
         }
         internal static IntPtr GetPointer(IPlaylist playlist)
         {
@@ -724,6 +750,41 @@ namespace SpotiFire.SpotifyLib
         protected override int IntPtrHashCode()
         {
             return playlistPtr.GetHashCode();
+        }
+
+
+        public PlaylistOfflineStatus OfflineStatus
+        {
+            get 
+            {
+                lock (libspotify.Mutex)
+                    return libspotify.sp_playlist_get_offline_status(session.sessionPtr, playlistPtr);
+            }
+        }
+
+        public void SetOfflineMode(bool offline)
+        {
+            lock (libspotify.Mutex)
+                libspotify.sp_playlist_set_offline_mode(session.sessionPtr, playlistPtr, offline);
+        }
+
+        public int OfflineDownloadProgress
+        {
+            get
+            {
+                lock (libspotify.Mutex)
+                    return libspotify.sp_playlist_get_offline_download_completed(session.sessionPtr, playlistPtr);
+            }
+        }
+
+
+        public bool IsLoaded
+        {
+            get 
+            {
+                lock (libspotify.Mutex)
+                    return libspotify.sp_playlist_is_loaded(playlistPtr);
+            }
         }
     }
 }

@@ -14,6 +14,7 @@ namespace Spotify
         }
         private BASSBuffer basbuffer = null;
         private STREAMPROC streamproc = null;
+        private int channel;
 
         public int EnqueueSamples(int channels, int rate, byte[] samples, int frames)
         {
@@ -23,10 +24,8 @@ namespace Spotify
                 Bass.BASS_Init(-1, rate, BASSInit.BASS_DEVICE_DEFAULT, IntPtr.Zero);
                 basbuffer = new BASSBuffer(0.5f, rate, channels, 2);
                 streamproc = new STREAMPROC(Reader);
-                Bass.BASS_ChannelPlay(
-                    Bass.BASS_StreamCreate(rate, channels, BASSFlag.BASS_DEFAULT, streamproc, IntPtr.Zero),
-                    false
-                    );
+                channel = Bass.BASS_StreamCreate(rate, channels, BASSFlag.BASS_DEFAULT, streamproc, IntPtr.Zero);
+                Bass.BASS_ChannelPlay(channel, false);
             }
 
             if (basbuffer.Space(0) > samples.Length)
@@ -48,13 +47,35 @@ namespace Spotify
 
         public void Stop()
         {
-            basbuffer.Clear();
+            if (basbuffer != null)
+            {
+                basbuffer.Clear();
+            }
+            if(channel != 0)
+                Bass.BASS_ChannelSetPosition(channel, 0);
         }
 
         public bool Paused
         {
             get;
             set;
+        }
+
+        public TimeSpan Position
+        {
+            get
+            {
+                if (channel == 0) return TimeSpan.Zero;
+                // length in bytes
+                long len = Bass.BASS_ChannelGetPosition(channel, BASSMode.BASS_POS_BYTES);
+                if (len <= 0)
+                {
+                    return TimeSpan.Zero;
+                }
+                // the time length
+                int seconds = (int)Bass.BASS_ChannelBytes2Seconds(channel, len);
+                return TimeSpan.FromSeconds(seconds);
+            }
         }
     }
 }
