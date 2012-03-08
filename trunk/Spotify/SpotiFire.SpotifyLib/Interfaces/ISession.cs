@@ -25,7 +25,7 @@ namespace SpotiFire.SpotifyLib
         IPlaylistContainer PlaylistContainer { get; }
         IPlaylist Starred { get; }
         IPlaylist Inbox { get; }
-        IEnumerable<ISpotifyObject> GetTopList(ToplistType listType, int region, int maxNumber);
+        IEnumerable<ISpotifyObject> GetTopList(ToplistType listType, int maxNumber);
         event SessionEventHandler PlayTokenLost;
         ISearch Search(string query, int trackOffset, int trackCount, int albumOffset, int albumCount, int artistOffset, int artistCount);
         void SetPrefferedBitrate(sp_bitrate bitrate);

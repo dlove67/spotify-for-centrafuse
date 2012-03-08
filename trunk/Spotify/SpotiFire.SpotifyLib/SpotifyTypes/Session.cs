@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.IO;
 
 namespace SpotiFire.SpotifyLib
 {
@@ -660,19 +661,40 @@ namespace SpotiFire.SpotifyLib
 
         private object popularLock = new object();
 
-        public IEnumerable<ISpotifyObject> GetTopList(ToplistType listType, int region, int maxNumber)
+        public IEnumerable<ISpotifyObject> GetTopList(ToplistType listType, int maxNumber)
         {
+            int currentRegion = -1;
+            lock(libspotify.Mutex)
+            {
+                currentRegion = libspotify.sp_session_user_country(this.sessionPtr);
+            }
             IntPtr topListBrowserPtr = IntPtr.Zero;
             ManualResetEvent reset = new ManualResetEvent(false);
+            Exception createException = null;
             ThreadPool.QueueUserWorkItem(delegate(object obj)
             {
-                lock (libspotify.Mutex)
+                try
                 {
-                    topListBrowserPtr = libspotify.sp_toplistbrowse_create(this.sessionPtr, listType, region, null, GetPopularCallback, IntPtr.Zero);
+                    lock (libspotify.Mutex)
+                    {
+                        topListBrowserPtr = libspotify.sp_toplistbrowse_create(this.sessionPtr, listType, currentRegion, null, GetPopularCallback, IntPtr.Zero);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    createException = ex;
+                }
+                finally
+                {
                     reset.Set();
                 }
             });
             reset.WaitOne();
+
+            if (createException != null)
+            {
+                throw createException;
+            }
 
             if (topListBrowserPtr == IntPtr.Zero)
             {

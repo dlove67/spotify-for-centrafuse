@@ -121,8 +121,11 @@ namespace Spotify
 
         void session_StreamingError(ISession sender, SessionEventArgs e)
         {
-            WriteError(e.Message);
-            CF_displayMessage("Streaming Error:" + Environment.NewLine + e.Message);
+            this.BeginInvoke(new MethodInvoker(delegate()
+                {
+                    WriteError(e.Message);
+                    CF_displayMessage("Streaming Error:" + Environment.NewLine + e.Message);
+                }));
         }
 
         private void PlayPause()

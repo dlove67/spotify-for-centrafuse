@@ -11,7 +11,11 @@ namespace SpotiFire.SpotifyLib
         void AutoLinkTracks(bool autoLink);
         string Description { get; }
         bool PendingChanges { get; }
-        //PlaylistOfflineStatus OfflineStatus { get; }
+        PlaylistOfflineStatus OfflineStatus { get; }
+        void SetOfflineMode(bool offline);
+        int OfflineDownloadProgress { get; }
+        bool IsLoaded { get; }
+
 
         event PlaylistEventHandler<TracksAddedEventArgs> TracksAdded;
         event PlaylistEventHandler<TracksEventArgs> TracksRemoved;

@@ -106,7 +106,12 @@
     <Compile Include="TableState.cs" />
     <Compile Include="Utility.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="images\dynamicbuttons.psd" />
+    <None Include="images\main - new.psd" />
+    <None Include="images\main.psd" />
+    <None Include="images\multiple choice dialog.psd" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SpotiFire.SpotifyLib\SpotiFire.SpotifyLib.csproj">
       <Project>{CBF5614B-AF79-4228-8265-7DC2BAF9A626}</Project>
@@ -114,7 +119,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="cfapp.xml" />
+    <Content Include="cfapp.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Languages\English.xml" />
     <Content Include="Skins\Clean\addAll.png" />
     <Content Include="Skins\Clean\addAllDown.png" />
@@ -127,8 +134,16 @@
     <Content Include="Skins\Clean\dynamicButtonOff.png" />
     <Content Include="Skins\Clean\dynamicButtonOn.png" />
     <Content Include="Skins\Clean\icon.png" />
+    <Content Include="Skins\Clean\listview\downloading.png" />
+    <Content Include="Skins\Clean\listview\offline.png" />
+    <Content Include="Skins\Clean\listview\online.png" />
+    <Content Include="Skins\Clean\listview\queued.png" />
     <Content Include="Skins\Clean\main_off.png" />
     <Content Include="Skins\Clean\main_on.png" />
+    <Content Include="Skins\Clean\offline.png" />
+    <Content Include="Skins\Clean\offlineDown.png" />
+    <Content Include="Skins\Clean\online.png" />
+    <Content Include="Skins\Clean\onlineDown.png" />
     <Content Include="Skins\Clean\SelectionBar.png" />
     <Content Include="Skins\Clean\Separator.png" />
     <Content Include="Skins\Clean\Skin.xml">

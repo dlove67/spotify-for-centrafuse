@@ -84,6 +84,14 @@ namespace SpotiFire.SpotifyLib
             reset.WaitOne();
             albumBrowse.Complete -= handler;
         }
-    }
 
+        public static void WaitForCompletion(this IPlaylistContainer playlistContainer)
+        {
+            var reset = new ManualResetEvent(playlistContainer.IsLoaded);
+            PlaylistContainerHandler handler = (c, e) => reset.Set();
+            playlistContainer.Loaded += handler;
+            reset.WaitOne();
+            playlistContainer.Loaded -= handler;
+        }
+    }
 }

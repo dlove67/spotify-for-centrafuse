@@ -4,7 +4,7 @@
     <APPNAME>Spotify</APPNAME>
     <APPLOCATION>[CFAPPDIR]\Plugins\Spotify</APPLOCATION>
     <APPTYPE>PLUGIN</APPTYPE>
-    <VERSION>1.0</VERSION>
+    <VERSION>1.1</VERSION>
     <REQUIRESRESTART>True</REQUIRESRESTART>
   </APPDATA>
   <APPFILES>
@@ -25,9 +25,18 @@
     <FILENAME register="false" overwrite="true" source="Skins\Clean\icon.png" destination="[CFAPPDIR]\Plugins\Spotify\Skins\Clean\icon.png" />
     <FILENAME register="false" overwrite="true" source="Skins\Clean\main_off.png" destination="[CFAPPDIR]\Plugins\Spotify\Skins\Clean\main_off.png" />
     <FILENAME register="false" overwrite="true" source="Skins\Clean\main_on.png" destination="[CFAPPDIR]\Plugins\Spotify\Skins\Clean\main_on.png" />
+    <FILENAME register="false" overwrite="true" source="Skins\Clean\offline.png" destination="[CFAPPDIR]\Plugins\Spotify\Skins\Clean\offline.png" />
+    <FILENAME register="false" overwrite="true" source="Skins\Clean\offlineDown.png" destination="[CFAPPDIR]\Plugins\Spotify\Skins\Clean\offlineDown.png" />
+    <FILENAME register="false" overwrite="true" source="Skins\Clean\online.png" destination="[CFAPPDIR]\Plugins\Spotify\Skins\Clean\online.png" />
+    <FILENAME register="false" overwrite="true" source="Skins\Clean\onlineDown.png" destination="[CFAPPDIR]\Plugins\Spotify\Skins\Clean\onlineDown.png" />
     <FILENAME register="false" overwrite="true" source="Skins\Clean\SelectionBar.png" destination="[CFAPPDIR]\Plugins\Spotify\Skins\Clean\SelectionBar.png" />
     <FILENAME register="false" overwrite="true" source="Skins\Clean\Separator.png" destination="[CFAPPDIR]\Plugins\Spotify\Skins\Clean\Separator.png" />
     <FILENAME register="false" overwrite="true" source="Skins\Clean\Skin.xml" destination="[CFAPPDIR]\Plugins\Spotify\Skins\Clean\Skin.xml" />
+
+    <FILENAME register="false" overwrite="true" source="Skins\Clean\listview\downloading.png" destination="[CFAPPDIR]\Plugins\Spotify\Skins\Clean\listview\downloading.png" />
+    <FILENAME register="false" overwrite="true" source="Skins\Clean\listview\offline.png" destination="[CFAPPDIR]\Plugins\Spotify\Skins\Clean\listview\offline.png" />
+    <FILENAME register="false" overwrite="true" source="Skins\Clean\listview\online.png" destination="[CFAPPDIR]\Plugins\Spotify\Skins\Clean\listview\online.png" />
+    <FILENAME register="false" overwrite="true" source="Skins\Clean\listview\queued.png" destination="[CFAPPDIR]\Plugins\Spotify\Skins\Clean\listview\queued.png" />
 
     <FILENAME register="false" overwrite="true" source="Languages\English.xml" destination="[CFAPPDIR]\Plugins\Spotify\Languages\English.xml" />
   </APPFILES>
