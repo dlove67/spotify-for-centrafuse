@@ -29,6 +29,7 @@ namespace SpotiFire.SpotifyLib
         event SessionEventHandler PlayTokenLost;
         ISearch Search(string query, int trackOffset, int trackCount, int albumOffset, int albumCount, int artistOffset, int artistCount);
         void SetPrefferedBitrate(sp_bitrate bitrate);
+        void SetConnectionType(ConnectionType type);
         event SessionEventHandler StartPlayback;
         event SessionEventHandler StopPlayback;
         event SessionEventHandler StreamingError;

@@ -164,18 +164,18 @@ namespace Spotify
 
                 CFControls.CFListViewItem[] audioFormatItems = new CFControls.CFListViewItem[3];
                 audioFormatItems[0] = new CFControls.CFListViewItem(sp_bitrate.BITRATE_96k.ToString(), sp_bitrate.BITRATE_96k.ToString(), false);
-                audioFormatItems[1] = new CFControls.CFListViewItem(sp_bitrate.BITRATE_160k.ToString(), sp_bitrate.BITRATE_96k.ToString(), false);
-                audioFormatItems[2] = new CFControls.CFListViewItem(sp_bitrate.BITRATE_320k.ToString(), sp_bitrate.BITRATE_96k.ToString(), false);
+                audioFormatItems[1] = new CFControls.CFListViewItem(sp_bitrate.BITRATE_160k.ToString(), sp_bitrate.BITRATE_160k.ToString(), false);
+                audioFormatItems[2] = new CFControls.CFListViewItem(sp_bitrate.BITRATE_320k.ToString(), sp_bitrate.BITRATE_320k.ToString(), false);
 
                 object resultObject;
                 string resultvalue, resulttext;
 
-                DialogResult result = this.CF_systemDisplayDialog(CF_Dialogs.FileBrowser, this.pluginLang.ReadField("/APPLANG/SETUP/BITRATE"), null, currentBitrate, out resultvalue, out resulttext, out resultObject, audioFormatItems, false, true, false, false, false, false, 1);
+                DialogResult result = this.CF_systemDisplayDialog(CF_Dialogs.FileBrowser, this.pluginLang.ReadField("/APPLANG/SETUP/BITRATE"), currentBitrate, currentBitrate, out resultvalue, out resulttext, out resultObject, audioFormatItems, false, true, false, false, false, false, 1);
 
                 if (result == System.Windows.Forms.DialogResult.OK)
                 {
-                    this.pluginConfig.WriteField("/APPCONFIG/BITRATE", resultvalue);
-                    ButtonValue[(int)value] = resultvalue;
+                    this.pluginConfig.WriteField("/APPCONFIG/BITRATE", resulttext);
+                    ButtonValue[(int)value] = resulttext;
                 }
 
             }

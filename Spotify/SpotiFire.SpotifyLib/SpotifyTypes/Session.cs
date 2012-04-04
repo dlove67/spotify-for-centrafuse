@@ -812,5 +812,12 @@ namespace SpotiFire.SpotifyLib
 
         internal event SessionEventHandler DisposeAll;
         #endregion
+
+
+        public void SetConnectionType(ConnectionType type)
+        {
+            lock (libspotify.Mutex)
+                libspotify.sp_session_set_connection_type(sessionPtr, type);
+        }
     }
 }
