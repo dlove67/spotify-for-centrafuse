@@ -305,6 +305,17 @@ namespace SpotiFire.SpotifyLib
         /// <returns>Country encoded in an integer 'SE' = 'S' << 8 | 'E'</returns>
         [DllImport("libspotify")]
         internal static extern int sp_session_user_country(IntPtr sessionPtr);
+
+        /// <summary>
+        /// Set to true if the connection is currently routed over a roamed connectivity
+        /// 
+        /// Used in conjunction with sp_session_set_connection_rules() to control
+        /// how libspotify should behave in respect to network activity and offline synchronization.
+        /// </summary>
+        /// <param name="sessionPtr">Session object</param>
+        /// <param name="connectionType">Connection type</param>
+        [DllImport("libspotify")]
+        internal static extern void sp_session_set_connection_type(IntPtr sessionPtr, ConnectionType connectionType);
         #endregion
 
         #region Links (Spotify URIs)
@@ -1826,6 +1837,39 @@ namespace SpotiFire.SpotifyLib
         /// Playlist queued for download
         /// </summary>
         Waiting = 3
+    }
+
+    public enum ConnectionType
+    {
+        /// <summary>
+        /// Connection type unknown (default)
+        /// </summary>
+        Unknown = 0,
+
+        /// <summary>
+        /// No connection
+        /// </summary>
+        None = 1,
+
+        /// <summary>
+        /// Mobile data (EDGE, 3G, etc)
+        /// </summary>
+        Mobile = 2,
+
+        /// <summary>
+        /// Roamed mobile data (EDGE, 3G, etc)
+        /// </summary>
+        MobileRoaming = 3,
+
+        /// <summary>
+        /// Wireless connection
+        /// </summary>
+        Wifi = 4,
+
+        /// <summary>
+        /// Ethernet cable, etc
+        /// </summary>
+        Wired = 5
     }
     #endregion
 }

@@ -159,7 +159,9 @@ copy "$(TargetPath)" "D:\Program Files (x86)\Centrafuse\Centrafuse Auto\Plugins\
 xcopy "$(ProjectDir)Skins\*.*" "D:\Program Files (x86)\Centrafuse\Centrafuse Auto\Plugins\Spotify\Skins\" /E /y
 xcopy "$(ProjectDir)Languages\*.*" "D:\Program Files (x86)\Centrafuse\Centrafuse Auto\Plugins\Spotify\Languages\" /E /y
 
-del "C:\ProgramData\Centrafuse\Centrafuse Auto\Administrator\DLLCache\Spotify_1.0" /Q</PostBuildEvent>
+del "C:\ProgramData\Centrafuse\Centrafuse Auto\Administrator\DLLCache\Spotify_1.0" /Q
+del "C:\ProgramData\Centrafuse\Centrafuse Auto\Administrator\DLLCache\Spotify_1.1" /Q
+del "C:\ProgramData\Centrafuse\Centrafuse Auto\Administrator\DLLCache\Spotify_1.2" /Q</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
