@@ -84,6 +84,7 @@
     <Compile Include="MultipleChoiceDialog.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="PersistentNowPlaying.cs" />
     <Compile Include="Setup.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -92,6 +93,9 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Spotify.ImageLoading.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Spotify.PersistentNowPlaying.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Spotify.Player.cs">
@@ -113,16 +117,12 @@
     <None Include="images\multiple choice dialog.psd" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SpotiFire.SpotifyLib\SpotiFire.SpotifyLib.csproj">
-      <Project>{CBF5614B-AF79-4228-8265-7DC2BAF9A626}</Project>
-      <Name>SpotiFire.SpotifyLib</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="cfapp.xml">
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="Languages\English.xml" />
+    <Content Include="Languages\English.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Skins\Clean\addAll.png" />
     <Content Include="Skins\Clean\addAllDown.png" />
     <Content Include="Skins\Clean\addSelected.png" />
@@ -149,6 +149,12 @@
     <Content Include="Skins\Clean\Skin.xml">
       <SubType>Designer</SubType>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SpotiFire.SpotifyLib\SpotiFire.SpotifyLib.csproj">
+      <Project>{CBF5614B-AF79-4228-8265-7DC2BAF9A626}</Project>
+      <Name>SpotiFire.SpotifyLib</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -70,15 +70,19 @@ namespace Spotify
                 }));
         }
 
+        bool firstLogin = true;
         private void OnLoginComplete()
         {
             this.BeginInvoke(new MethodInvoker(delegate()
                 {
                     loginComplete = true;
                     CF_systemCommand(centrafuse.Plugins.CF_Actions.HIDEINFO);
+                    if (firstLogin)
+                    {
+                        firstLogin = false;
+                        RestoreNowPlaying();
+                    }
                 }));
         }
-
-        
     }
 }

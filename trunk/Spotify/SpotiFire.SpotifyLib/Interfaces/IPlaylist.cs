@@ -1,8 +1,7 @@
 ﻿
-using System;
 namespace SpotiFire.SpotifyLib
 {
-    public interface IPlaylist : ISpotifyObject
+    public interface IPlaylist : ISpotifyObject, IAsyncLoaded
     {
         string Name { get; set; }
         IPlaylistTrackList Tracks { get; }

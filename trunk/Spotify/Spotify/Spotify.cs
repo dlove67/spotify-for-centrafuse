@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using System.Threading;
 using System.IO;
 using System.ComponentModel;
+using System.Drawing;
 
 namespace Spotify
 {
@@ -177,7 +178,7 @@ namespace Spotify
                         case GroupingType.Artists:
                             {
                                 var artist = row["ArtistObject"] as IArtist;
-                                using (var artistBrowser = artist.Browse())
+                                using (var artistBrowser = artist.Browse(sp_artistbrowse_type.NO_TRACKS))
                                 {
                                     if (!artistBrowser.IsComplete)
                                     {
@@ -558,6 +559,8 @@ namespace Spotify
         {
             if (SpotifySession != null)
             {
+                SaveNowPlayingToFile();
+
                 if (SpotifySession.ConnectionState == sp_connectionstate.LOGGED_IN)
                 {
                     SpotifySession.Logout();
@@ -633,16 +636,35 @@ namespace Spotify
                         }
                     }
                     return true;
+                case "Spotify.Inbox":
+                    if (state >= CF_ButtonState.Click)
+                    {
+                        var choices = new string[] { "Songs", "Albums", "Playlists"};
+                        var choiceDialog = new MultipleChoiceDialog(this.CF_displayHooks.displayNumber, this.CF_displayHooks.rearScreen, "Retrieve Inbox of:", choices);
+                        choiceDialog.MainForm = base.MainForm;
+                        choiceDialog.CF_pluginInit();
+                        if (choiceDialog.ShowDialog(this) == DialogResult.OK)
+                        {
+                            int choice = choiceDialog.Choice;
+                            switch (choice)
+                            {
+                                case 0:
+                                    LoadInboxTracks();
+                                    break;
+                                case 1:
+                                    LoadInboxAlbums();
+                                    break;
+                                case 2:
+                                    LoadInboxPlaylists();
+                                    break;
+                            }
+                        }
+                    }
+                    return true;
                 case "Spotify.Playlists":
                     if (state >= CF_ButtonState.Click)
                     {
                         LoadPlaylists();
-                    }
-                    return true;
-                case "Spotify.Inbox":
-                    if (state >= CF_ButtonState.Click)
-                    {
-                        LoadInbox();
                     }
                     return true;
                 case "Spotify.Popular":

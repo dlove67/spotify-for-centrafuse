@@ -30,7 +30,7 @@
         <CONTROL type="Button" id="Spotify.playlistsButton" bounds="2;122;83;59" effect="" tabindex="0" enabled="true" cmlaction="Spotify.Playlists" />
         <CONTROL type="Button" id="Spotify.inboxButton" bounds="2;182;83;58" effect="" tabindex="0" enabled="true" cmlaction="Spotify.Inbox" />
         <CONTROL type="Button" id="Spotify.popularButton" bounds="2;242;83;59" effect="" tabindex="0" enabled="true" cmlaction="Spotify.Popular" />
-        <CONTROL type="Button" id="Spotify.search" bounds="2;62;83;60" effect="" tabindex="0" enabled="true" cmlaction="Spotify.Search" holdcmlaction="Spotify.SearchHold" holdtime="2" />
+        <CONTROL type="Button" id="Spotify.search" bounds="2;62;83;60" effect="" tabindex="0" enabled="true" cmlaction="Spotify.Search" holdcmlaction="Spotify.SearchHold" holdtime="1" />
         <CONTROL type="AdvancedList" id="mainList" bounds="97;54;446;240" effect="" tabindex="0" enabled="true">
           <LAYOUT>
             <TEMPLATES>
