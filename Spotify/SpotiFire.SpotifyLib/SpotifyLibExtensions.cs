@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 
@@ -54,15 +55,19 @@ namespace SpotiFire.SpotifyLib
         }
         public static ISearch SearchTracks(this ISession session, string query, int trackOffset, int trackCount)
         {
-            return session.Search(query, trackOffset, trackCount, 0, 0, 0, 0);
+            return session.Search(query, trackOffset, trackCount, 0, 0, 0, 0, 0, 0, sp_search_type.STANDARD);
         }
         public static ISearch SearchAlbums(this ISession session, string query, int albumOffset, int albumCount)
         {
-            return session.Search(query, 0, 0, albumOffset, albumCount, 0, 0);
+            return session.Search(query, 0, 0, albumOffset, albumCount, 0, 0, 0, 0, sp_search_type.STANDARD);
         }
         public static ISearch SearchArtists(this ISession session, string query, int artistOffset, int artistCount)
         {
-            return session.Search(query, 0, 0, 0, 0, artistOffset, artistCount);
+            return session.Search(query, 0, 0, 0, 0, artistOffset, artistCount, 0, 0, sp_search_type.STANDARD);
+        }
+        public static ISearch SearchPlaylist(this ISession session, string query, int playlistOffset, int playlistCount)
+        {
+            return session.Search(query, 0, 0, 0, 0, 0, 0, playlistOffset, playlistCount, sp_search_type.STANDARD);
         }
 
         // ArtistBrowse methods made Synchronously
@@ -84,14 +89,6 @@ namespace SpotiFire.SpotifyLib
             reset.WaitOne();
             albumBrowse.Complete -= handler;
         }
-
-        public static void WaitForCompletion(this IPlaylistContainer playlistContainer)
-        {
-            var reset = new ManualResetEvent(playlistContainer.IsLoaded);
-            PlaylistContainerHandler handler = (c, e) => reset.Set();
-            playlistContainer.Loaded += handler;
-            reset.WaitOne();
-            playlistContainer.Loaded -= handler;
-        }
     }
+
 }

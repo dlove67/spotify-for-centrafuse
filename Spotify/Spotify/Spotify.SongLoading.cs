@@ -13,7 +13,7 @@ namespace Spotify
 {
     public partial class Spotify
     {
-        private void LoadInbox()
+        private void LoadInboxTracks()
         {
             if (CheckLoggedInAndOnline())
             {
@@ -47,10 +47,116 @@ namespace Spotify
                     this.BeginInvoke(new MethodInvoker(delegate()
                     {
                         CF_systemCommand(CF_Actions.HIDEINFO);
-                        SwitchToTab(Tabs.Inbox, GroupingType.Songs, table, "Inbox", null,  true);
+                        SwitchToTab(Tabs.Inbox, GroupingType.Songs, table, "Inbox Songs", null,  true);
                     }));
                 });
             }
+        }
+
+        private void LoadInboxPlaylists()
+        {
+            if (CheckLoggedInAndOnline())
+            {
+                CF_systemCommand(CF_Actions.SHOWINFO, "Retrieving your inbox");
+                ThreadPool.QueueUserWorkItem(delegate(object obj)
+                {
+                    IEnumerable<ITrack> inboxTracks = null;
+                    try
+                    {
+                        using (var inboxList = SpotifySession.Inbox)
+                        {
+                            while (!inboxList.IsLoaded)
+                                Thread.Sleep(THREAD_SLEEP_INTERVAL);
+
+                            inboxTracks = inboxList.Tracks.Cast<ITrack>().ToArray();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        this.BeginInvoke(new MethodInvoker(delegate()
+                        {
+                            CF_systemCommand(CF_Actions.HIDEINFO);
+                            CF_displayMessage(ex.Message);
+                            WriteError(ex);
+                        }));
+                        return;
+                    }
+
+                    var placeholderLinks = inboxTracks.Where(t => t.IsPlaceholder).Select(t => t.CreateLink()).ToArray();
+                    var playlists = placeholderLinks.Where(l => l.Type == sp_linktype.SP_LINKTYPE_PLAYLIST).Select(l => l.As<IPlaylist>()).ToArray();
+
+                    foreach (var link in placeholderLinks)
+                        link.Dispose();
+                    
+                    while (playlists.Any(p => !p.IsLoaded))
+                        Thread.Sleep(100); //so goddamn elegant
+
+                    var table = LoadPlaylistsIntoTable(playlists);
+
+                    this.BeginInvoke(new MethodInvoker(delegate()
+                    {
+                        CF_systemCommand(CF_Actions.HIDEINFO);
+                        SwitchToTab(Tabs.Inbox, GroupingType.Playlists, table, "Inbox Playlists", null, true);
+                    }));
+                });
+            }
+        }
+
+        private void LoadInboxAlbums()
+        {
+            CF_systemDisplayDialog(CF_Dialogs.OkBoxBig, "Unfortunately, there's a bug in retrieving albums from your inbox. I'm trying to fix it. Stay tuned!");
+            //if (CheckLoggedInAndOnline())
+            //{
+            //    CF_systemCommand(CF_Actions.SHOWINFO, "Retrieving your inbox");
+            //    ThreadPool.QueueUserWorkItem(delegate(object obj)
+            //    {
+            //        //IEnumerable<ITrack> inboxTracks = null;
+            //        //try
+            //        //{
+            //        //    using (var inboxList = SpotifySession.Inbox)
+            //        //    {
+            //        //        while (!inboxList.IsLoaded)
+            //        //            Thread.Sleep(THREAD_SLEEP_INTERVAL);
+
+            //        //        inboxTracks = inboxList.Tracks.Cast<ITrack>().ToArray();
+            //        //    }
+            //        //}
+            //        //catch (Exception ex)
+            //        //{
+            //        //    this.BeginInvoke(new MethodInvoker(delegate()
+            //        //    {
+            //        //        CF_systemCommand(CF_Actions.HIDEINFO);
+            //        //        CF_displayMessage(ex.Message);
+            //        //        WriteError(ex);
+            //        //    }));
+            //        //    return;
+            //        //}
+
+            //        //var placeholderLinks = inboxTracks.Where(t => t.IsPlaceholder).Select(t => t.CreateLink()).ToArray();
+            //        //var albumLinks = placeholderLinks.Where(l => l.Type == sp_linktype.SP_LINKTYPE_ALBUM);
+            //        //var albums = placeholderLinks.Where(l => l.Type == sp_linktype.SP_LINKTYPE_ALBUM).Select(l => l.As<IAlbum>()).ToArray();
+
+            //        var link = SpotifySession.ParseLink("spotify:album:24mCiOTIF5Ob1uwluRFERv");
+            //        var album = link.As<IAlbum>();
+            //        link.Dispose();
+
+            //        List<IAlbum> albums = new List<IAlbum>(new IAlbum[] { album });
+                    
+            //        //foreach (var link in placeholderLinks)
+            //        //    link.Dispose();
+
+            //        while (albums.Any(a => !a.IsLoaded))
+            //            Thread.Sleep(100); //once again, pure elegance
+
+            //        var table = LoadAlbumsIntoTable(albums);
+
+            //        this.BeginInvoke(new MethodInvoker(delegate()
+            //        {
+            //            CF_systemCommand(CF_Actions.HIDEINFO);
+            //            SwitchToTab(Tabs.Inbox, GroupingType.Albums, table, "Inbox Albums", null, true);
+            //        }));
+            //    });
+            //}
         }
 
         private void LoadStarredTracks()
@@ -361,7 +467,7 @@ namespace Spotify
             table.Columns.Add("Album", typeof(string));
             table.Columns.Add("TrackObject", typeof(ITrack));
 
-            foreach (var track in tracks.Where(t => t.IsAvailable && t.Error == sp_error.OK))
+            foreach (var track in tracks.Where(t => t.IsAvailable && !t.IsPlaceholder))
             {
                 var newRow = table.NewRow();
                 newRow["Name"] = track.Name;

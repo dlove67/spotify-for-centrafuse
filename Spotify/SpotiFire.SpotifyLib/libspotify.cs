@@ -8,7 +8,7 @@ namespace SpotiFire.SpotifyLib
         internal static readonly object Mutex = new object();
 
         #region Constraints
-        public const int SPOTIFY_API_VERSION = 9;
+        public const int SPOTIFY_API_VERSION = 11;
         public const int STRINGBUFFER_SIZE = 256;
         #endregion
 
@@ -110,9 +110,11 @@ namespace SpotiFire.SpotifyLib
         /// <param name="sessionPtr">Session object returned from <c>sp_session_create</c>.</param>
         /// <param name="username">The username to log in.</param>
         /// <param name="password">The password for the specified username.</param>
+        /// <param name="remember">If set, the username / password will be remembered by libspotify.</param>
+        /// <param name="blob">If you have received a blob in the credentials_blob_updated you can pas this here instead of password</param>
         /// <returns>Error code.</returns>
         [DllImport("libspotify")]
-        internal static extern void sp_session_login(IntPtr sessionPtr, string username, string password, bool remember);
+        internal static extern void sp_session_login(IntPtr sessionPtr, string username, string password, bool remember, string blob);
 
         /// <summary>
         /// Fetches the currently logged in user.
@@ -193,7 +195,7 @@ namespace SpotiFire.SpotifyLib
         /// <param name="play">If set to true, playback will occur. If set to false, the playback will be paused.</param>
         /// <returns>Error code.</returns>
         [DllImport("libspotify")]
-        internal static extern void sp_session_player_play(IntPtr sessionPtr, bool play);
+        internal static extern sp_error sp_session_player_play(IntPtr sessionPtr, bool play);
 
         /// <summary>
         /// Stops the currently playing track.
@@ -296,8 +298,9 @@ namespace SpotiFire.SpotifyLib
         /// <returns>A user. The object is owned by the session so the caller should not release it.</returns>
         [DllImport("libspotify")]
         internal static extern IntPtr sp_session_friend(IntPtr sessionPtr, int index);
+        #endregion
 
-        /// <summary>
+/// <summary>
         /// Get currently logged in users country
         /// updated the offline_status_updated() callback will be invoked.
         /// </summary>
@@ -316,9 +319,18 @@ namespace SpotiFire.SpotifyLib
         /// <param name="connectionType">Connection type</param>
         [DllImport("libspotify")]
         internal static extern void sp_session_set_connection_type(IntPtr sessionPtr, ConnectionType connectionType);
-        #endregion
+        
 
         #region Links (Spotify URIs)
+        /// <summary>
+        /// Create a Spotify link given a string.
+        /// </summary>
+        /// <remarks>You need to release the link when you are done with it.</remarks>
+        /// <param name="link">A string representation of a Spotify link.</param>
+        /// <returns>A link representation of the given string representation. If the link could not be parsed, this function returns NULL.</returns>
+        [DllImport("libspotify")]
+        internal static extern IntPtr sp_link_create_from_string(string link);
+
         /// <summary>
         /// Creates a link object from an artist.
         /// </summary>
@@ -329,12 +341,11 @@ namespace SpotiFire.SpotifyLib
         internal static extern IntPtr sp_link_create_from_artist(IntPtr artistPtr);
 
         /// <summary>
-        /// Creates a link object from a track.
+        /// Generates a link object from a track.
         /// </summary>
         /// <remarks>You need to release the link when you are done with it.</remarks>
         /// <param name="trackPtr">The track.</param>
-        /// <param name="offset">The offset</param>
-        /// <returns>A link object representing the track.</returns>
+        /// <returns>>A link object representing the track.</returns>
         [DllImport("libspotify")]
         internal static extern IntPtr sp_link_create_from_track(IntPtr trackPtr, int offset);
 
@@ -427,16 +438,30 @@ namespace SpotiFire.SpotifyLib
         internal static extern sp_error sp_track_error(IntPtr trackPtr);
 
         /// <summary>
-        /// Return true if the track is available for playback.
+        /// Return availability for a track
         /// </summary>
-        /// <param name="sessionPtr">Session object returned from <c>sp_session_create</c>.</param>
-        /// <param name="albumPtr">The track.</param>
-        /// <remarks>The track must be loaded or this function will always return false.
-        /// <seealso cref="libspotify.sp_track_is_loaded"/>
-        /// </remarks>
-        /// <returns>True if track is available for playback, otherwise false.</returns>
+        /// <param name="sessionPtr"></param>
+        /// <param name="trackPtr"></param>
+        /// <returns></returns>
         [DllImport("libspotify")]
-        internal static extern bool sp_track_is_available(IntPtr sessionPtr, IntPtr trackPtr);
+        internal static extern TrackAvailablity sp_track_get_availability(IntPtr sessionPtr, IntPtr trackPtr);
+
+        /// <summary>
+        /// Return true if the track is a placeholder. Placeholder tracks are used
+        /// to store other objects than tracks in the playlist. Currently this is
+        ///  used in the inbox to store artists, albums and playlists.
+        /// 
+        /// Use sp_link_create_from_track() to get a link object that points
+        /// to the real object this "track" points to.
+        /// 
+        /// Contrary to most functions the track does not have to be
+        /// loaded for this function to return correct value
+        /// </summary>
+        /// <param name="trackPtr"></param>
+        /// <returns>True if track is a placeholder</returns>
+        [DllImport("libspotify")]
+        [return: MarshalAs(UnmanagedType.I1)]
+        internal static extern bool sp_track_is_placeholder(IntPtr trackPtr);
 
         /// <summary>
         /// Return true if the track is a local file.
@@ -789,6 +814,9 @@ namespace SpotiFire.SpotifyLib
         /// <param name="album_count">The number of albums to ask for.</param>
         /// <param name="artist_offset">The offset among the artists of the result.</param>
         /// <param name="artist_count">The number of artists to ask for.</param>
+        /// <param name="playlist_offset">The offset among the playlists of the result.</param>
+        /// <param name="playlist_count">The number of playlists to ask for.</param>
+        /// <param name="search_type">	Type of search, can be used for suggest searches.</param>
         /// <param name="callbackPtr">Callback that will be called once the search operation is complete.
         /// Pass null if you are not interested in this event.</param>
         /// <param name="userdataPtr">Opaque pointer passed to callback.</param>
@@ -796,7 +824,7 @@ namespace SpotiFire.SpotifyLib
         [DllImport("libspotify")]
         internal static extern IntPtr sp_search_create(IntPtr sessionPtr, string query, int track_offset,
             int track_count, int album_offset, int album_count, int artist_offset, int artist_count,
-            IntPtr callbackPtr, IntPtr userdataPtr);
+            int playlist_offset, int playlist_count, sp_search_type search_type, IntPtr callbackPtr, IntPtr userdataPtr);
 
         /// <summary>
         /// Create a search object from the radio channel.
@@ -1416,10 +1444,11 @@ namespace SpotiFire.SpotifyLib
         /// <param name="sessionPtr">Session object.</param>
         /// <param name="artistPtr">Artist to be browsed. The artist metadata does not have to be loaded.</param>
         /// <param name="callbackPtr">Callback to be invoked when browsing has been completed. Pass NULL if you are not interested in this event.</param>
+        /// <param name="type">Type of data requested, see the sp_artistbrowse_type enum for details.</param>
         /// <param name="userDataPtr">Userdata passed to callback.</param>
         /// <returns>Artist browse object.</returns>
         [DllImport("libspotify")]
-        internal static extern IntPtr sp_artistbrowse_create(IntPtr sessionPtr, IntPtr artistPtr, IntPtr callbackPtr, IntPtr userDataPtr);
+        internal static extern IntPtr sp_artistbrowse_create(IntPtr sessionPtr, IntPtr artistPtr, sp_artistbrowse_type type, IntPtr callbackPtr, IntPtr userDataPtr);
 
         /// <summary>
         /// Check if an artist browse request is completed.
@@ -1637,7 +1666,6 @@ namespace SpotiFire.SpotifyLib
         #endregion
 
         #region Structs
-        [StructLayout(LayoutKind.Sequential)]
         internal struct sp_session_config
         {
             internal int api_version;
@@ -1651,6 +1679,8 @@ namespace SpotiFire.SpotifyLib
             internal bool compress_playlists;
             internal bool dont_save_metadata_for_playlists;
             internal bool initially_unload_playlists;
+            internal string device_id;
+            internal string tracefile;
         }
 
         internal struct sp_session_callbacks
@@ -1670,6 +1700,9 @@ namespace SpotiFire.SpotifyLib
             internal IntPtr start_playback;
             internal IntPtr stop_playback;
             internal IntPtr get_audio_buffer_stats;
+            internal IntPtr offline_status_updated;
+            internal IntPtr offline_error;
+            internal IntPtr credentials_blob_updated;
         }
 
         internal struct sp_audioformat
@@ -1685,8 +1718,6 @@ namespace SpotiFire.SpotifyLib
             int stutter;
         }
         #endregion
-
-        
     }
 
     #region Enums
@@ -1720,12 +1751,12 @@ namespace SpotiFire.SpotifyLib
         INVALID_DEVICE_ID = 25,
         CANT_OPEN_TRACE_FILE = 26,
         APPLICATION_BANNED = 27,
-        OFFLINE_TOO_MANY_TRACKS = 31,
-        OFFLINE_DISK_CACHE = 32,
-        OFFLINE_EXPIRED = 33,
-        OFFLINE_NOT_ALLOWED = 34,
-        OFFLINE_LICENSE_LOST = 35,
-        OFFLINE_LICENSE_ERROR = 36 
+        OFFLINE_TOO_MANY_TRACKS = 28,
+        OFFLINE_DISK_CACHE = 29,
+        OFFLINE_EXPIRED = 30,
+        OFFLINE_NOT_ALLOWED = 31,
+        OFFLINE_LICENSE_LOST = 32,
+        OFFLINE_LICENSE_ERROR = 33
     }
 
     public enum sp_connectionstate
@@ -1789,34 +1820,65 @@ namespace SpotiFire.SpotifyLib
         /// A normal playlist.
         /// </summary>
         SP_PLAYLIST_TYPE_PLAYLIST = 0,
+
         /// <summary>
         /// Marks a folder starting point.
         /// </summary>
         SP_PLAYLIST_TYPE_START_FOLDER = 1,
+
         /// <summary>
         /// Marks a folder ending point.
         /// </summary>
         SP_PLAYLIST_TYPE_END_FOLDER = 2,
+
         /// <summary>
         /// Unknown entry.
         /// </summary>
         SP_PLAYLIST_TYPE_PLACEHOLDER = 3
     }
 
-    public enum ToplistType
+public enum ToplistType
     {
         Artists = 0,
         Albums = 1,
         Tracks = 2
     }
 
-    public enum ToplistSpecialRegion
+public enum ToplistSpecialRegion
     {
         Everywhere = 0,
         User = 1
     }
 
-    public enum PlaylistOfflineStatus
+    public enum sp_search_type
+    {
+        STANDARD = 0,
+        SUGGEST = 1
+    }
+
+    /// <summary>
+    /// Controls the type of data that will be included in artist browse queries.
+    /// </summary>
+    public enum sp_artistbrowse_type
+    {
+        /// <summary>
+        /// All information except tophit tracks This mode is deprecated and will removed in a future release.
+        /// </summary>
+        FULL = 0,
+
+        /// <summary>
+        /// Only albums and data about them, no tracks. In other words, sp_artistbrowse_num_tracks() will return 0.
+        /// </summary>
+        NO_TRACKS = 1,
+
+        /// <summary>
+        /// Only return data about the artist (artist name, similar artist biography, etc.
+        /// No tracks or album will be abailable. sp_artistbrowse_num_tracks() and sp_artistbrowse_num_albums() will both return 0.
+        /// </summary>
+        NO_ALBUMS = 2
+    }
+
+public enum PlaylistOfflineStatus
     {
         /// <summary>
         /// The playlist is not offline enabled
@@ -1870,6 +1932,14 @@ namespace SpotiFire.SpotifyLib
         /// Ethernet cable, etc
         /// </summary>
         Wired = 5
+    }
+
+    public enum TrackAvailablity
+    {
+        Unavailable = 0,
+        Available = 1,
+        NotStreamable = 2,
+        BannedByArtist = 3
     }
     #endregion
 }

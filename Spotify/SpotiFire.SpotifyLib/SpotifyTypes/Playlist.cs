@@ -126,6 +126,11 @@ namespace SpotiFire.SpotifyLib
                 get { IsAlive(true); return playlist.Tracks; }
             }
 
+            public bool IsLoaded
+            {
+                get { IsAlive(true); return playlist.IsLoaded; }
+            }
+
             public string Name
             {
                 get { IsAlive(true); return playlist.Name; }
@@ -207,11 +212,6 @@ namespace SpotiFire.SpotifyLib
                     IsAlive(true);
                     return playlist.OfflineDownloadProgress;
                 }
-            }
-
-            public bool IsLoaded
-            {
-                get { IsAlive(true); return playlist.IsLoaded; }
             }
         }
         internal static IntPtr GetPointer(IPlaylist playlist)
@@ -565,7 +565,7 @@ namespace SpotiFire.SpotifyLib
                     IsAlive(true);
                     IntPtr trackArrayPtr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(IntPtr)));
                     IntPtr[] ptrArray = new[] { Track.GetPointer(track) };
-                    
+
                     try
                     {
                         Marshal.Copy(ptrArray, 0, trackArrayPtr, 1);
@@ -577,7 +577,7 @@ namespace SpotiFire.SpotifyLib
                     {
                         try { Marshal.FreeHGlobal(trackArrayPtr); }
                         catch
-                        {}
+                        { }
                     }
 
 
@@ -630,6 +630,16 @@ namespace SpotiFire.SpotifyLib
         #endregion
 
         #region Properties
+        public bool IsLoaded
+        {
+            get
+            {
+                IsAlive(true);
+                lock (libspotify.Mutex)
+                    return libspotify.sp_playlist_is_loaded(playlistPtr);
+            }
+        }
+
         public virtual string Name
         {
             get
@@ -774,16 +784,6 @@ namespace SpotiFire.SpotifyLib
             {
                 lock (libspotify.Mutex)
                     return libspotify.sp_playlist_get_offline_download_completed(session.sessionPtr, playlistPtr);
-            }
-        }
-
-
-        public bool IsLoaded
-        {
-            get 
-            {
-                lock (libspotify.Mutex)
-                    return libspotify.sp_playlist_is_loaded(playlistPtr);
             }
         }
     }

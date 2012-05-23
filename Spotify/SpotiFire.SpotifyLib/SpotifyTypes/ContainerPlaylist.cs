@@ -27,7 +27,6 @@ namespace SpotiFire.SpotifyLib
             }
 
             public KeyGen(IntPtr playlistPtr, IntPtr folderId, sp_playlist_type type)
-                
             {
                 Item1 = playlistPtr;
                 Item2 = folderId;
@@ -60,7 +59,7 @@ namespace SpotiFire.SpotifyLib
                 var comparer = EqualityComparer<object>.Default;
                 return CombineHashCodes(comparer.GetHashCode(this.Item1), comparer.GetHashCode(this.Item2), comparer.GetHashCode(this.Item3));
             }
-            
+
         }
         #endregion
         #region Wrapper

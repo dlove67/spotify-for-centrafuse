@@ -17,8 +17,8 @@ namespace SpotiFire.SpotifyLib
         event SessionEventHandler MetadataUpdated;
         event MusicDeliveryEventHandler MusicDeliver;
         sp_error PlayerLoad(ITrack track);
-        void PlayerPause();
-        void PlayerPlay();
+        sp_error PlayerPause();
+        sp_error PlayerPlay();
         sp_error PlayerSeek(int offset);
         sp_error PlayerSeek(TimeSpan offset);
         void PlayerUnload();
@@ -27,7 +27,7 @@ namespace SpotiFire.SpotifyLib
         IPlaylist Inbox { get; }
         IEnumerable<ISpotifyObject> GetTopList(ToplistType listType, int maxNumber);
         event SessionEventHandler PlayTokenLost;
-        ISearch Search(string query, int trackOffset, int trackCount, int albumOffset, int albumCount, int artistOffset, int artistCount);
+        ISearch Search(string query, int trackOffset, int trackCount, int albumOffset, int albumCount, int artistOffset, int artistCount, int playlistOffset, int playlistCount, sp_search_type type);
         void SetPrefferedBitrate(sp_bitrate bitrate);
         void SetConnectionType(ConnectionType type);
         event SessionEventHandler StartPlayback;

@@ -92,6 +92,12 @@ namespace SpotiFire.SpotifyLib
             {
                 return Track.Get(session as Session, this.track.trackPtr);
             }
+
+
+            public bool IsPlaceholder
+            {
+                get { IsAlive(true); return track.IsPlaceholder; }
+            }
         }
         internal static IntPtr GetPointer(ITrack track)
         {
@@ -190,7 +196,7 @@ namespace SpotiFire.SpotifyLib
             {
                 IsAlive(true);
                 lock (libspotify.Mutex)
-                    return libspotify.sp_track_is_available(session.sessionPtr, trackPtr);
+                    return (libspotify.sp_track_get_availability(session.sessionPtr, trackPtr) & TrackAvailablity.Available) > 0;
             }
         }
 
@@ -253,6 +259,16 @@ namespace SpotiFire.SpotifyLib
                 IsAlive(true);
                 lock (libspotify.Mutex)
                     return libspotify.sp_track_popularity(trackPtr);
+            }
+        }
+
+        public bool IsPlaceholder
+        {
+            get 
+            {
+                IsAlive(true);
+                lock (libspotify.Mutex)
+                    return libspotify.sp_track_is_placeholder(trackPtr);
             }
         }
 
@@ -337,5 +353,8 @@ namespace SpotiFire.SpotifyLib
         {
             throw new NotImplementedException();
         }
+
+
+       
     }
 }
