@@ -98,32 +98,10 @@ namespace Spotify
             this.CF3_initSection("Main");
             var list = advancedlistArray[CF_getAdvancedListID("mainList")];
             list.DataBinding = MainTableBindingSource;
-            Set4_0Properties_Safe(list);
+            list.DoubleClickListTiming = true;
             list.DoubleClick += new EventHandler<CFControlsExtender.Listview.ItemArgs>(list_DoubleClick);
             list.LongClick += new EventHandler<CFControlsExtender.Listview.ItemArgs>(list_LongClick);
             SwitchToTab(Tabs.NowPlaying, GroupingType.Songs, NowPlayingTable, "Now Playing", null, false);
-        }
-
-        private void Set4_0Properties_Safe(CFControls.CFAdvancedList list)
-        {
-            //Don't attempt to set this property explicitly. This will break backwards-compatibility with 3.5-3.6 versions
-            try
-            {
-                var prop = list.GetType().GetProperty("DoubleClickListTiming", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-                if (prop != null)
-                {
-                    //well shit, you must be running 4.0, good for you
-                    var setMethod = prop.GetSetMethod();
-                    if (setMethod != null)
-                    {
-                        setMethod.Invoke(list, new object[] { true });
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                WriteError(ex);
-            }
         }
 
         void list_DoubleClick(object sender, CFControlsExtender.Listview.ItemArgs e)
@@ -895,12 +873,26 @@ namespace Spotify
                     return GetCurrentTrackDuration();
                 case CF_CMLTextItems.MediaPosition:
                     return GetCurrentTrackPosition();
-                case CF_CMLTextItems.MediaMode:
-                    return "WTF IS MODE";
+                case CF_CMLTextItems.MediaSliderPosition:
+                    return GetCurrentTrackScrubberPosition();
 
                 default:
                     return base.CF_pluginCMLData(textItem);
             }
+        }
+
+        private string GetCurrentTrackScrubberPosition()
+        {
+            if (currentTrack == null)
+                return 0.ToString();
+
+            var currentPosition = player.Position;
+            var totalLength = currentTrack.Duration;
+            var positionPercentage = Math.Floor(currentPosition.TotalSeconds / totalLength.TotalSeconds * 100);
+            if (positionPercentage > 100)
+                positionPercentage = 100;
+
+            return ((int)positionPercentage).ToString();
         }
 
         private string GetCurrentTrackPosition()
