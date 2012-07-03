@@ -42,6 +42,11 @@ namespace SpotiFire.SpotifyLib
                 get { IsAlive(true); return search.Artists; }
             }
 
+            public IArray<IPlaylist> Playlists
+            {
+                get { IsAlive(true); return search.Playlists; }
+            }
+
             public event SearchEventHandler Complete;
 
             public string DidYouMean
@@ -72,6 +77,11 @@ namespace SpotiFire.SpotifyLib
             public int TotalTracks
             {
                 get { IsAlive(true); return search.TotalTracks; }
+            }
+
+            public int TotalPlaylists
+            {
+                get { IsAlive(true); return search.TotalPlaylists; }
             }
 
             public IArray<ITrack> Tracks
@@ -148,6 +158,7 @@ namespace SpotiFire.SpotifyLib
         private DelegateArray<ITrack> tracks;
         private DelegateArray<IAlbum> albums;
         private DelegateArray<IArtist> artists;
+        private DelegateArray<IPlaylist> playlists;
         #endregion
 
         #region Constructor and setup
@@ -196,6 +207,29 @@ namespace SpotiFire.SpotifyLib
                 IsAlive(true);
                 lock (libspotify.Mutex)
                     return Artist.Get(session, libspotify.sp_search_artist(searchPtr, index));
+            });
+
+            this.playlists = new DelegateArray<IPlaylist>(() =>
+            {
+                IsAlive(true);
+                lock (libspotify.Mutex)
+                    return libspotify.sp_search_num_playlists(searchPtr);
+            }, (index) =>
+            {
+                IsAlive(true);
+                lock (libspotify.Mutex)
+                {
+                    string playlistUri = libspotify.sp_search_playlist_uri(searchPtr, index);
+                    var playlistLink = session.ParseLink(playlistUri);
+                    if (playlistLink.Type == sp_linktype.SP_LINKTYPE_PLAYLIST)
+                    {
+                        var playlist = playlistLink.As<IPlaylist>();
+                        playlistLink.Dispose();
+                        return playlist;
+                    }
+                    else
+                        throw new Exception("Wrong link type: " + playlistLink.Type.ToString());
+                }
             });
 
             _Complete += new search_complete_cb(Search__Complete);
@@ -260,6 +294,15 @@ namespace SpotiFire.SpotifyLib
             }
         }
 
+        public IArray<IPlaylist> Playlists
+        {
+            get
+            {
+                IsAlive(true);
+                return playlists;
+            }
+        }
+
         public string Query
         {
             get
@@ -307,6 +350,16 @@ namespace SpotiFire.SpotifyLib
                 IsAlive(true);
                 lock (libspotify.Mutex)
                     return libspotify.sp_search_total_artists(searchPtr);
+            }
+        }
+
+        public int TotalPlaylists
+        {
+            get
+            {
+                IsAlive(true);
+                lock (libspotify.Mutex)
+                    return libspotify.sp_search_total_playlists(searchPtr);
             }
         }
 

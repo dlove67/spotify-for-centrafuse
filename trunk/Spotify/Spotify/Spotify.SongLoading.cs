@@ -423,38 +423,76 @@ namespace Spotify
 
         private void LoadArtistSearch()
         {
-            CFDialogParams searchDialogParams = new CFDialogParams("Search by artist name");
-            CFDialogResults results = new CFDialogResults();
-            DialogResult result = CF_displayDialog(CF_Dialogs.OSK, searchDialogParams, results);
-            if (result == System.Windows.Forms.DialogResult.OK)
+            if (CheckLoggedInAndOnline())
             {
-                string searchText = results.resultvalue;
-                CF_systemCommand(CF_Actions.SHOWINFO, "Searching...");
-                ThreadPool.QueueUserWorkItem(delegate(object param)
+                CFDialogParams searchDialogParams = new CFDialogParams("Search by artist name");
+                CFDialogResults results = new CFDialogResults();
+                DialogResult result = CF_displayDialog(CF_Dialogs.OSK, searchDialogParams, results);
+                if (result == System.Windows.Forms.DialogResult.OK)
                 {
-                    var search = SpotifySession.SearchArtists(searchText, 0, 20);
-                    if (!search.IsComplete)
+                    string searchText = results.resultvalue;
+                    CF_systemCommand(CF_Actions.SHOWINFO, "Searching...");
+                    ThreadPool.QueueUserWorkItem(delegate(object param)
                     {
-                        search.WaitForCompletion();
-                    }
-                    List<IArtist> artists = new List<IArtist>();
-                    foreach (var artist in search.Artists)
-                    {
-                        artists.Add(artist);
-                    }
-                    search.Dispose();
-                    var table = LoadArtistsIntoTable(artists);
+                        var search = SpotifySession.SearchArtists(searchText, 0, 20);
+                        if (!search.IsComplete)
+                        {
+                            search.WaitForCompletion();
+                        }
+                        List<IArtist> artists = new List<IArtist>();
+                        foreach (var artist in search.Artists)
+                        {
+                            artists.Add(artist);
+                        }
+                        search.Dispose();
+                        var table = LoadArtistsIntoTable(artists);
 
-                    this.BeginInvoke(new MethodInvoker(delegate()
-                    {
-                        CF_systemCommand(CF_Actions.HIDEINFO);
-                        SwitchToTab(Tabs.Search, GroupingType.Artists, table, "Search", null, true);
-                    }));
-                });
+                        this.BeginInvoke(new MethodInvoker(delegate()
+                        {
+                            CF_systemCommand(CF_Actions.HIDEINFO);
+                            SwitchToTab(Tabs.Search, GroupingType.Artists, table, "Search", null, true);
+                        }));
+                    });
+                }
             }
         }
 
-        
+        private void LoadPlaylistSearch()
+        {
+            if (CheckLoggedInAndOnline())
+            {
+                CFDialogParams searchDialogParams = new CFDialogParams("Search by playlist name");
+                CFDialogResults results = new CFDialogResults();
+                DialogResult result = CF_displayDialog(CF_Dialogs.OSK, searchDialogParams, results);
+                if (result == System.Windows.Forms.DialogResult.OK)
+                {
+                    string searchText = results.resultvalue;
+                    CF_systemCommand(CF_Actions.SHOWINFO, "Searching...");
+                    ThreadPool.QueueUserWorkItem(delegate(object param)
+                    {
+                        var search = SpotifySession.SearchPlaylist(searchText, 0, 20);
+                        if (!search.IsComplete)
+                        {
+                            search.WaitForCompletion();
+                        }
+                        List<IPlaylist> playlists = new List<IPlaylist>();
+                        foreach (var playlist in search.Playlists)
+                        {
+                            playlists.Add(playlist);
+                        }
+                        search.Dispose();
+
+                        var table = LoadPlaylistsIntoTable(playlists);
+
+                        this.BeginInvoke(new MethodInvoker(delegate()
+                        {
+                            CF_systemCommand(CF_Actions.HIDEINFO);
+                            SwitchToTab(Tabs.Search, GroupingType.Playlists, table, "Search", null, true);
+                        }));
+                    });
+                }
+            }
+        }
 
         private DataTable LoadTracksIntoTable(IEnumerable<ITrack> tracks)
         {

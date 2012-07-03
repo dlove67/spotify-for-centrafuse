@@ -5,6 +5,7 @@ namespace SpotiFire.SpotifyLib
     {
         IArray<IAlbum> Albums { get; }
         IArray<IArtist> Artists { get; }
+        IArray<IPlaylist> Playlists { get; }
         event SearchEventHandler Complete;
         bool IsComplete { get; }
         string DidYouMean { get; }
@@ -13,6 +14,7 @@ namespace SpotiFire.SpotifyLib
         int TotalAlbums { get; }
         int TotalArtists { get; }
         int TotalTracks { get; }
+        int TotalPlaylists { get; }
         IArray<ITrack> Tracks { get; }
     }
 }
