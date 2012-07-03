@@ -1,0 +1,12 @@
+﻿<APPLANG>
+  <SPOTIFY>
+    <DISPLAYNAME>Spotify</DISPLAYNAME>
+  </SPOTIFY>
+  <SETUP>
+    <TITLE>Spotify</TITLE>
+    <USERNAME>User Name</USERNAME>
+    <PASSWORD>Password</PASSWORD>
+    <BITRATE>Preferred Bitrate</BITRATE>
+    <LOCATION>Spotify data folder location</LOCATION>
+  </SETUP>
+</APPLANG>
