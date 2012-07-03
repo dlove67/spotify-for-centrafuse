@@ -100,6 +100,7 @@ namespace Spotify
             list.DataBinding = MainTableBindingSource;
             Set4_0Properties_Safe(list);
             list.DoubleClick += new EventHandler<CFControlsExtender.Listview.ItemArgs>(list_DoubleClick);
+            list.LongClick += new EventHandler<CFControlsExtender.Listview.ItemArgs>(list_LongClick);
             SwitchToTab(Tabs.NowPlaying, GroupingType.Songs, NowPlayingTable, "Now Playing", null, false);
         }
 
@@ -210,10 +211,93 @@ namespace Spotify
                                 TableStates.Peek().Position = table.Rows.IndexOf(row);
                                 TableStates.Peek().ImageID = currentImageId;
                                 SwitchToTab(CurrentTab, GroupingType.Songs, resultTable, playlist.Name, playlist.ImageId, false);
-
-                                SetupDynamicButton3(playlist);
+                                
+                                if(CurrentTab == Tabs.Playlists)
+                                    SetupDynamicButton3(playlist);
                             }
                             break;
+                    }
+                }
+            }
+        }
+
+        void list_LongClick(object sender, CFControlsExtender.Listview.ItemArgs e)
+        {
+            if (CurrentTab == Tabs.NowPlaying)
+            {
+                if (e.ItemId < NowPlayingTable.Rows.Count)
+                {
+                    var currentTrack = NowPlayingTable.Rows[e.ItemId]["TrackObject"] as ITrack;
+                    if (currentTrack != null)
+                    {
+                        var choices = new string[] { "Album", "Artist" };
+                        var choiceDialog = new MultipleChoiceDialog(this.CF_displayHooks.displayNumber, this.CF_displayHooks.rearScreen, "Search for:", choices);
+                        choiceDialog.MainForm = base.MainForm;
+                        choiceDialog.CF_pluginInit();
+                        if (choiceDialog.ShowDialog(this) == DialogResult.OK)
+                        {
+                            int choice = choiceDialog.Choice;
+                            switch (choice)
+                            {
+                                case 0:
+                                    using (var albumBrowser = currentTrack.Album.Browse())
+                                    {
+                                        if (!albumBrowser.IsComplete)
+                                        {
+                                            CF_systemCommand(CF_Actions.SHOWINFO, "Please wait...");
+                                            albumBrowser.WaitForCompletion();
+                                            CF_systemCommand(CF_Actions.HIDEINFO);
+                                        }
+
+                                        List<ITrack> tracks = new List<ITrack>();
+                                        foreach (var track in albumBrowser.Tracks)
+                                        {
+                                            if (track.IsAvailable)
+                                            {
+                                                tracks.Add(track);
+                                            }
+                                        }
+
+                                        var resultTable = LoadTracksIntoTable(tracks);
+                                        SwitchToTab(Tabs.Search, GroupingType.Songs, resultTable, currentTrack.Album.Name, currentTrack.Album.CoverId, true);
+                                    }
+
+                                    break;
+                                case 1:
+                                    if (currentTrack.Artists.Count > 1)
+                                    {
+                                        choices = currentTrack.Artists.Select(a => a.Name).Take(5).ToArray();
+                                        choiceDialog = new MultipleChoiceDialog(this.CF_displayHooks.displayNumber, this.CF_displayHooks.rearScreen, "Search for:", choices);
+                                        choiceDialog.MainForm = base.MainForm;
+                                        choiceDialog.CF_pluginInit();
+                                        if (choiceDialog.ShowDialog(this) == DialogResult.OK)
+                                        {
+                                            choice = choiceDialog.Choice;
+                                        }
+                                        else
+                                            return;
+                                    }
+                                    else
+                                    {
+                                        choice = 0;
+                                    }
+                                    var artist = currentTrack.Artists.ElementAt(choice);
+                                    using (var artistBrowser = artist.Browse(sp_artistbrowse_type.NO_TRACKS))
+                                    {
+                                        if (!artistBrowser.IsComplete)
+                                        {
+                                            CF_systemCommand(CF_Actions.SHOWINFO, "Please wait...");
+                                            artistBrowser.WaitForCompletion();
+                                            CF_systemCommand(CF_Actions.HIDEINFO);
+                                        }
+
+                                        var albums = artistBrowser.Albums;
+                                        var resultTable = LoadAlbumsIntoTable(albums);
+                                        SwitchToTab(Tabs.Search, GroupingType.Albums, resultTable, artist.Name, artistBrowser.PortraitIds.FirstOrDefault(), true);
+                                    }
+                                    break;
+                            }
+                        }
                     }
                 }
             }
@@ -614,7 +698,7 @@ namespace Spotify
                 case "Spotify.SearchHold":
                     if (state == CF_ButtonState.HoldClick)
                     {
-                        var choices = new string[] { "Songs", "Albums", "Artists"};
+                        var choices = new string[] { "Songs", "Albums", "Artists", "Playlists" };
                         var choiceDialog = new MultipleChoiceDialog(this.CF_displayHooks.displayNumber, this.CF_displayHooks.rearScreen, "Search for:", choices);
                         choiceDialog.MainForm = base.MainForm;
                         choiceDialog.CF_pluginInit();
@@ -631,6 +715,9 @@ namespace Spotify
                                     break;
                                 case 2:
                                     LoadArtistSearch();
+                                    break;
+                                case 3:
+                                    LoadPlaylistSearch();
                                     break;
                             }
                         }
@@ -772,7 +859,6 @@ namespace Spotify
                     return base.CF_pluginCMLCommand(command, strparams, state, zone);
             }
         }
-
 
         private void OnBackClicked()
         {

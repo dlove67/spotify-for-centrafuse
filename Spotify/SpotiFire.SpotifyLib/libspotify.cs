@@ -899,6 +899,9 @@ namespace SpotiFire.SpotifyLib
         [DllImport("libspotify")]
         internal static extern int sp_search_num_artists(IntPtr searchPtr);
 
+        [DllImport("libspotify")]
+        internal static extern int sp_search_num_playlists(IntPtr searchPtr);
+
         /// <summary>
         /// Return the artist at the given index in the given search object.
         /// </summary>
@@ -907,6 +910,9 @@ namespace SpotiFire.SpotifyLib
         /// <returns>The artist at the given index in the given search object.</returns>
         [DllImport("libspotify")]
         internal static extern IntPtr sp_search_artist(IntPtr searchPtr, int index);
+
+        [DllImport("libspotify")]
+        internal static extern string sp_search_playlist_uri(IntPtr searchPtr, int index);
 
         /// <summary>
         /// Return the search query for the given search object.
@@ -953,6 +959,9 @@ namespace SpotiFire.SpotifyLib
         /// <returns>The total number of artists matching the original query.</returns>
         [DllImport("libspotify")]
         internal static extern int sp_search_total_artists(IntPtr searchPtr);
+
+        [DllImport("libspotify")]
+        internal static extern int sp_search_total_playlists(IntPtr searchPtr);
 
         /// <summary>
         /// Increase the reference count of a search result.
