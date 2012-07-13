@@ -32,6 +32,16 @@ namespace Spotify
                         image.WaitForLoaded();
                         if (imageId.Equals(currentImageId))
                         {
+                            for (int i = 0; i < 10; i++)
+                            {
+                                if (image.Format == sp_imageformat.SP_IMAGE_FORMAT_UNKNOWN)
+                                {
+                                    Thread.Sleep(1000);
+                                }
+                                else
+                                    break;
+                            }
+
                             var imageObject = image.GetImage();
                             if (imageId.Equals(currentImageId))
                             {
@@ -52,7 +62,11 @@ namespace Spotify
                         }
                         
                     }
-                    catch { return; }
+                    catch 
+                    {
+                        Console.WriteLine();
+                        return; 
+                    }
                 });
             }
         }

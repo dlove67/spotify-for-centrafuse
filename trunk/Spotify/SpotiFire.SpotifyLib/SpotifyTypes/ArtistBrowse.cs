@@ -56,6 +56,11 @@ namespace SpotiFire.SpotifyLib
                 get { IsAlive(true); return artistBrowse.Tracks; }
             }
 
+            public IArray<ITrack> TopHitTracks
+            {
+                get { IsAlive(true); return artistBrowse.TopHitTracks; }
+            }
+
             public IArray<IAlbum> Albums
             {
                 get { IsAlive(true); return artistBrowse.Albums; }
@@ -141,6 +146,7 @@ namespace SpotiFire.SpotifyLib
         private DelegateArray<string> portraitIds;
         private DelegateArray<ITrack> tracks;
         private DelegateArray<IAlbum> albums;
+        private DelegateArray<ITrack> topHitTracks;
         private DelegateArray<IArtist> similarArtists;
         private string biography;
         #endregion
@@ -180,6 +186,18 @@ namespace SpotiFire.SpotifyLib
                 IsAlive(true);
                 lock (libspotify.Mutex)
                     return Track.Get(session, libspotify.sp_artistbrowse_track(artistBrowsePtr, index));
+            });
+
+            this.topHitTracks = new DelegateArray<ITrack>(() =>
+            {
+                IsAlive(true);
+                lock (libspotify.Mutex)
+                    return libspotify.sp_artistbrowse_num_tophit_tracks(artistBrowsePtr);
+            }, (index) =>
+            {
+                IsAlive(true);
+                lock (libspotify.Mutex)
+                    return Track.Get(session, libspotify.sp_artistbrowse_tophit_track(artistBrowsePtr, index));
             });
 
             this.albums = new DelegateArray<IAlbum>(() =>
@@ -266,6 +284,14 @@ namespace SpotiFire.SpotifyLib
             get
             {
                 return tracks;
+            }
+        }
+
+        public IArray<ITrack> TopHitTracks
+        {
+            get 
+            {
+                return topHitTracks;
             }
         }
 

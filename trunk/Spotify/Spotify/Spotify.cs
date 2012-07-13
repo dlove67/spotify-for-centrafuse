@@ -166,7 +166,7 @@ namespace Spotify
                                         CF_systemCommand(CF_Actions.HIDEINFO);
                                     }
 
-                                    var albums = artistBrowser.Albums;
+                                    var albums = GetAlbumsIncludingTopHits(artistBrowser);
                                     var resultTable = LoadAlbumsIntoTable(albums);
                                     TableStates.Peek().Position = table.Rows.IndexOf(row);
                                     TableStates.Peek().ImageID = currentImageId;
@@ -269,7 +269,7 @@ namespace Spotify
                                             CF_systemCommand(CF_Actions.HIDEINFO);
                                         }
 
-                                        var albums = artistBrowser.Albums;
+                                        var albums = GetAlbumsIncludingTopHits(artistBrowser);
                                         var resultTable = LoadAlbumsIntoTable(albums);
                                         SwitchToTab(Tabs.Search, GroupingType.Albums, resultTable, artist.Name, artistBrowser.PortraitIds.FirstOrDefault(), true);
                                     }
@@ -279,6 +279,14 @@ namespace Spotify
                     }
                 }
             }
+        }
+
+        private IEnumerable<IAlbum> GetAlbumsIncludingTopHits(IArtistBrowse browser)
+        {
+            var topHitTracks = browser.TopHitTracks;
+            var albums = browser.Albums.ToList();
+            albums.Insert(0, new TopHitsAlbum(browser.Artist, topHitTracks, SpotifySession));
+            return albums;
         }
 
         private void SetupDynamicButton3(IPlaylist playlist)

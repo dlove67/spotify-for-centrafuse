@@ -108,6 +108,7 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="TableState.cs" />
+    <Compile Include="TopHitsAlbum.cs" />
     <Compile Include="Utility.cs" />
   </ItemGroup>
   <ItemGroup>
