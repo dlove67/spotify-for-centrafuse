@@ -64,10 +64,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Bass.Net">
-      <HintPath>..\..\..\Program Files (x86)\Centrafuse\Centrafuse Auto\Bass.Net.dll</HintPath>
+      <HintPath>.\Bass.Net.dll</HintPath>
     </Reference>
     <Reference Include="cfplugin">
-      <HintPath>..\..\..\Program Files (x86)\Centrafuse\Centrafuse Auto\cfplugin.dll</HintPath>
+      <HintPath>.\cfplugin.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -108,6 +108,7 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="TableState.cs" />
+    <Compile Include="TopHitsAlbum.cs" />
     <Compile Include="Utility.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -158,16 +159,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy "$(TargetDir)libspotify.dll" "D:\Program Files (x86)\Centrafuse\Centrafuse Auto\Plugins\Spotify" /y
-copy "$(TargetDir)SpotiFire.SpotifyLib.dll" "D:\Program Files (x86)\Centrafuse\Centrafuse Auto\Plugins\Spotify" /y
-copy "$(TargetPath)" "D:\Program Files (x86)\Centrafuse\Centrafuse Auto\Plugins\Spotify" /y
-
-xcopy "$(ProjectDir)Skins\*.*" "D:\Program Files (x86)\Centrafuse\Centrafuse Auto\Plugins\Spotify\Skins\" /E /y
-xcopy "$(ProjectDir)Languages\*.*" "D:\Program Files (x86)\Centrafuse\Centrafuse Auto\Plugins\Spotify\Languages\" /E /y
-
-del "C:\ProgramData\Centrafuse\Centrafuse Auto\Administrator\DLLCache\Spotify_1.0" /Q
-del "C:\ProgramData\Centrafuse\Centrafuse Auto\Administrator\DLLCache\Spotify_1.1" /Q
-del "C:\ProgramData\Centrafuse\Centrafuse Auto\Administrator\DLLCache\Spotify_1.2" /Q</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

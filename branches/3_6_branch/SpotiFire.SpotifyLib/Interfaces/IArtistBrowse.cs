@@ -12,6 +12,7 @@ namespace SpotiFire.SpotifyLib {
         bool IsComplete { get; }
         IArray<string> PortraitIds { get; }
         IArray<ITrack> Tracks { get; }
+        IArray<ITrack> TopHitTracks { get; }
         IArray<IAlbum> Albums { get; }
         IArray<IArtist> SimilarArtists { get; }
         string Biography { get; }
