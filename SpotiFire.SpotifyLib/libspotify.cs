@@ -1507,6 +1507,9 @@ namespace SpotiFire.SpotifyLib
         [DllImport("libspotify")]
         internal static extern int sp_artistbrowse_num_tracks(IntPtr artistBrowsePtr);
 
+        [DllImport("libspotify")]
+        internal static extern int sp_artistbrowse_num_tophit_tracks(IntPtr artistBrowsePtr);
+
         /// <summary>
         /// Given an artist browse object, return one of its tracks.
         /// </summary>
@@ -1515,6 +1518,9 @@ namespace SpotiFire.SpotifyLib
         /// <returns>A track object, or NULL if the index is out of range.</returns>
         [DllImport("libspotify")]
         internal static extern IntPtr sp_artistbrowse_track(IntPtr artistBrowsePtr, int index);
+
+        [DllImport("libspotify")]
+        internal static extern IntPtr sp_artistbrowse_tophit_track(IntPtr artistBrowsePtr, int index);
 
         /// <summary>
         /// Given an artist browse object, return number of albums.
