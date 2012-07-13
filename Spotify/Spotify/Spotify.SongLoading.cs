@@ -237,7 +237,14 @@ namespace Spotify
 
         private void LoadNowPlaying()
         {
-            SwitchToTab(Tabs.NowPlaying, GroupingType.Songs, NowPlayingTable, "Now Playing", null, true);
+            int? scrollState = null;
+            if(currentTrack != null)
+            {
+                var currentRow = this.NowPlayingTable.AsEnumerable().Single(row => (row["TrackObject"] as ITrack) == currentTrack);
+                scrollState = NowPlayingTable.Rows.IndexOf(currentRow);
+            }
+
+            SwitchToTab(Tabs.NowPlaying, GroupingType.Songs, NowPlayingTable, "Now Playing", null, true, scrollState);
         }
 
         private const int TopListLimit = 200;
