@@ -11,6 +11,26 @@ namespace Spotify
     public partial class Spotify
     {
         private BASSPlayer player = new BASSPlayer();
+
+        public bool ShuffleOn
+        {
+            get
+            {
+                string field = this.pluginConfig.ReadField("/APPCONFIG/SHUFFLE");
+                bool val;
+                if (bool.TryParse(field, out val))
+                    return val;
+                else
+                    return false;
+            }
+            set
+            {
+                this.pluginConfig.WriteField("/APPCONFIG/SHUFFLE", value.ToString(), true);
+            }
+        }
+
+        private LinkedList<ITrack> ShuffledTracks = new LinkedList<ITrack>();
+
         private void SubscribePlayerEvents(ISession session)
         {
             session.StreamingError += new SessionEventHandler(session_StreamingError);
@@ -41,16 +61,30 @@ namespace Spotify
             ITrack nextTrack = null;
             if (currentTrack != null)
             {
-                var trackRow = this.NowPlayingTable.Rows.Cast<DataRow>().Single(row => (row["TrackObject"] as ITrack).Equals(currentTrack));
-                var trackRowIx = this.NowPlayingTable.Rows.IndexOf(trackRow);
-                trackRowIx++;
-                if (this.NowPlayingTable.Rows.Count > trackRowIx)
+                if (ShuffleOn)
                 {
-                    nextTrack = this.NowPlayingTable.Rows[trackRowIx]["TrackObject"] as ITrack;
+                    var currentNode = ShuffledTracks.Find(currentTrack);
+                    var nextNode = currentNode.Next;
+
+                    if (nextNode == null && loopAround)
+                        nextNode = ShuffledTracks.First;
+
+                    if (nextNode != null)
+                        nextTrack = nextNode.Value;
                 }
-                else if (loopAround)
+                else
                 {
-                    nextTrack = this.NowPlayingTable.Rows[0]["TrackObject"] as ITrack;
+                    var trackRow = this.NowPlayingTable.Rows.Cast<DataRow>().Single(row => (row["TrackObject"] as ITrack).Equals(currentTrack));
+                    var trackRowIx = this.NowPlayingTable.Rows.IndexOf(trackRow);
+                    trackRowIx++;
+                    if (this.NowPlayingTable.Rows.Count > trackRowIx)
+                    {
+                        nextTrack = this.NowPlayingTable.Rows[trackRowIx]["TrackObject"] as ITrack;
+                    }
+                    else if (loopAround)
+                    {
+                        nextTrack = this.NowPlayingTable.Rows[0]["TrackObject"] as ITrack;
+                    }
                 }
             }
             if (nextTrack != null)
@@ -67,16 +101,30 @@ namespace Spotify
             ITrack previousTrack = null;
             if (currentTrack != null)
             {
-                var trackRow = this.NowPlayingTable.Rows.Cast<DataRow>().Single(row => (row["TrackObject"] as ITrack).Equals(currentTrack));
-                var trackRowIx = this.NowPlayingTable.Rows.IndexOf(trackRow);
-                trackRowIx--;
-                if (this.NowPlayingTable.Rows.Count > trackRowIx && trackRowIx >= 0)
+                if (ShuffleOn)
                 {
-                    previousTrack = this.NowPlayingTable.Rows[trackRowIx]["TrackObject"] as ITrack;
+                    var currentNode = ShuffledTracks.Find(currentTrack);
+                    var previousNode = currentNode.Previous;
+
+                    if (previousNode == null && loopAround)
+                        previousNode = ShuffledTracks.Last;
+
+                    if (previousNode != null)
+                        previousTrack = previousNode.Value;
                 }
-                else if (loopAround)
+                else
                 {
-                    previousTrack = this.NowPlayingTable.Rows[this.NowPlayingTable.Rows.Count - 1]["TrackObject"] as ITrack;
+                    var trackRow = this.NowPlayingTable.Rows.Cast<DataRow>().Single(row => (row["TrackObject"] as ITrack).Equals(currentTrack));
+                    var trackRowIx = this.NowPlayingTable.Rows.IndexOf(trackRow);
+                    trackRowIx--;
+                    if (this.NowPlayingTable.Rows.Count > trackRowIx && trackRowIx >= 0)
+                    {
+                        previousTrack = this.NowPlayingTable.Rows[trackRowIx]["TrackObject"] as ITrack;
+                    }
+                    else if (loopAround)
+                    {
+                        previousTrack = this.NowPlayingTable.Rows[this.NowPlayingTable.Rows.Count - 1]["TrackObject"] as ITrack;
+                    }
                 }
             }
             if (previousTrack != null)
@@ -98,7 +146,7 @@ namespace Spotify
                 SpotifySession.PlayerUnload();
                 player.Stop();
             }
-
+            currentTrackPositionOffset = new TimeSpan(0);
             var result = SpotifySession.PlayerLoad(track);
             SpotifySession.PlayerPlay();
             isPaused = false;
@@ -107,11 +155,20 @@ namespace Spotify
             SyncMainTableWithView();
         }
 
+        private void SeekCurrentTrack(int milliseconds)
+        {
+            player.Stop();
+            currentTrackPositionOffset = new TimeSpan(0, 0, 0, 0, milliseconds);
+            SpotifySession.PlayerSeek(milliseconds);
+        }
+
         public void StopAllPlayback()
         {
             currentTrack = null;
             SpotifySession.PlayerUnload();
             isPaused = false;
+            currentTrackPositionOffset = new TimeSpan(0);
+            player.Stop();
         }
 
         void session_MusicDeliver(ISession sender, MusicDeliveryEventArgs e)

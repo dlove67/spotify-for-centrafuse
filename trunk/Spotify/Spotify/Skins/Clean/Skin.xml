@@ -22,6 +22,10 @@
     <BUTTONIMAGE id="offlineDown" path="offlineDown.png" />
     <BUTTONIMAGE id="online" path="online.png" />
     <BUTTONIMAGE id="onlineDown" path="onlineDown.png" />
+    <BUTTONIMAGE id="shuffle" path="shuffle.png" />
+    <BUTTONIMAGE id="shuffleDown" path="shuffleDown.png" />
+    <BUTTONIMAGE id="straight" path="straight.png" />
+    <BUTTONIMAGE id="straightDown" path="straightDown.png" />
   </BUTTONIMAGES>
   <SECTIONS>
     <SECTION id="Main" effect="ToApp" bounds="0;88;800;304" off="Main_Off" down="Main_On">
@@ -36,16 +40,17 @@
             <TEMPLATES>
               <TEMPLATE id="default" selectable="true" layout="Stacked" baseSize="446;240" scrollbarStyleId="Scrollbar">
                 <ITEMGROUP type="Default" size="446;60">
-                  <ITEM id="Name" type="Text" position="7;7" size="439;21" dataSource="Name" styleId="Title" />
-                  <ITEM id="Artist" type="Text" position="10;27" size="436;21" dataSource="Artist" styleId="Artist" />
-                  <ITEM id="Album" type="Text" position="10;43" size="436;21" dataSource="Album" styleId="Album" />
+                  <ITEM id="Name" type="Text" position="7;7" size="399;21" dataSource="Name" styleId="Title" />
+                  <ITEM id="Artist" type="Text" position="10;27" size="396;21" dataSource="Artist" styleId="Artist" />
+                  <ITEM id="Album" type="Text" position="10;43" size="396;21" dataSource="Album" styleId="Album" />
                   <ITEM id="Line" type="Image" position="0;59" size="446;1" dataSource="cache:Separator.png" styleId="Image.Fit" />
                 </ITEMGROUP>
                 <ITEMGROUP type="Selected" size="446;60">
                   <ITEM id="Background" type="Image" position="2;0" size="444;60" dataSource="cache:SelectionBar.png" styleId="Image.Fit" />
-                  <ITEM id="Name" type="Text" position="7;7" size="439;21" dataSource="Name" styleId="Title.Selected" />
-                  <ITEM id="Artist" type="Text" position="10;27" size="436;21" dataSource="Artist" styleId="Artist.Selected" />
-                  <ITEM id="Album" type="Text" position="10;43" size="436;21" dataSource="Album" styleId="Album.Selected" />
+                  <ITEM id="Name" type="Text" position="7;7" size="394;21" dataSource="Name" styleId="Title.Selected" />
+                  <ITEM id="Artist" type="Text" position="10;27" size="391;21" dataSource="Artist" styleId="Artist.Selected" />
+                  <ITEM id="Album" type="Text" position="10;43" size="391;21" dataSource="Album" styleId="Album.Selected" />
+                  <ITEM id="Starred" type="Image" position="400;15" size="29;29" linkId="starred" dataSource="Starred{[value].png}" styleId="Image.Fit" />
                   <ITEM id="Line" type="Image" position="0;59" size="446;1" dataSource="cache:Separator.png" styleId="Image.Fit" />
                 </ITEMGROUP>
               </TEMPLATE>
