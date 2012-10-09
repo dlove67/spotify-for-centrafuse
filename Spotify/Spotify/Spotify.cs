@@ -91,6 +91,19 @@ namespace Spotify
             this.CF_localskinsetup();
 
             this.CF_params.pauseAudio = true;
+
+            this.CF_events.trackPositionChanged += new CFTrackPositionChangedEventHandler(CF_events_trackPositionChanged);
+        }
+
+        void CF_events_trackPositionChanged(object sender, TrackPositionChangedArgs e)
+        {
+            if (currentTrack != null)
+            {
+                var percentage = e.Percentage();
+                double fraction = (double)percentage / 100;
+                var offset = (int)(currentTrack.Duration.TotalMilliseconds * fraction);
+                SeekCurrentTrack(offset);
+            }
         }
 
         public override void CF_localskinsetup()
@@ -101,7 +114,58 @@ namespace Spotify
             list.DoubleClickListTiming = true;
             list.DoubleClick += new EventHandler<CFControlsExtender.Listview.ItemArgs>(list_DoubleClick);
             list.LongClick += new EventHandler<CFControlsExtender.Listview.ItemArgs>(list_LongClick);
+            list.LinkedItemClick += new EventHandler<CFControlsExtender.Listview.LinkedItemArgs>(list_LinkedItemClick);
             SwitchToTab(Tabs.NowPlaying, GroupingType.Songs, NowPlayingTable, "Now Playing", null, false);
+        }
+
+        void list_LinkedItemClick(object sender, CFControlsExtender.Listview.LinkedItemArgs e)
+        {
+            switch (e.LinkId)
+            {
+                case "starred":
+                    var table = MainTableBindingSource.DataSource as DataTable;
+                    if (e.ItemId < table.Rows.Count)
+                    {
+                        var row = table.Rows[e.ItemId];
+                        var track = row["TrackObject"] as ITrack;
+
+                        bool newValue = !track.IsStarred;
+                        track.IsStarred = newValue;
+
+                        this.CF_systemCommand(CF_Actions.SHOWINFO, "Please wait...");
+                        ThreadPool.QueueUserWorkItem((o) =>
+                            {
+                                try
+                                {
+                                    SleepUntilTrue(() => track.IsStarred == newValue);
+
+                                    this.BeginInvoke(new MethodInvoker(() =>
+                                    {
+                                        this.CF_systemCommand(CF_Actions.HIDEINFO);
+
+                                        row["Starred"] = GetStarredStatusString(newValue);
+
+                                        if (CurrentTab != Tabs.NowPlaying)
+                                        {
+                                            var nowPlayingRow = NowPlayingTable.Rows.Cast<DataRow>().SingleOrDefault(r => (r["TrackObject"] as ITrack).Equals(track));
+                                            if (nowPlayingRow != null)
+                                                nowPlayingRow["Starred"] = GetStarredStatusString(newValue);
+                                        }
+                                    }));
+                                }
+                                catch (Exception ex)
+                                {
+                                    this.BeginInvoke(new MethodInvoker(() =>
+                                        {
+                                            CF_systemCommand(CF_Actions.HIDEINFO);
+                                            WriteError(ex);
+                                            CF_displayMessage(ex.Message);
+                                        }));
+                                }
+                            });
+                    }
+                    break;
+            }
         }
 
         void list_DoubleClick(object sender, CFControlsExtender.Listview.ItemArgs e)
@@ -167,7 +231,7 @@ namespace Spotify
                                     }
 
                                     var albums = GetAlbumsIncludingTopHits(artistBrowser);
-                                    var resultTable = LoadAlbumsIntoTable(albums);
+                                    var resultTable = LoadAlbumsIntoTable(albums, false);
                                     TableStates.Peek().Position = table.Rows.IndexOf(row);
                                     TableStates.Peek().ImageID = currentImageId;
                                     SwitchToTab(CurrentTab, GroupingType.Albums, resultTable, artist.Name, artistBrowser.PortraitIds.FirstOrDefault(), false);
@@ -270,7 +334,7 @@ namespace Spotify
                                         }
 
                                         var albums = GetAlbumsIncludingTopHits(artistBrowser);
-                                        var resultTable = LoadAlbumsIntoTable(albums);
+                                        var resultTable = LoadAlbumsIntoTable(albums, false);
                                         SwitchToTab(Tabs.Search, GroupingType.Albums, resultTable, artist.Name, artistBrowser.PortraitIds.FirstOrDefault(), true);
                                     }
                                     break;
@@ -356,7 +420,6 @@ namespace Spotify
             {
                 case Tabs.NowPlaying:
                     CF_setButtonOn(BUTTON_NOW_PLAYING);
-                    SyncMainTableWithView();
                     break;
                 case Tabs.Playlists:
                     CF_setButtonOn(BUTTON_PLAYLISTS);
@@ -376,11 +439,15 @@ namespace Spotify
 
             if (scrollState.HasValue)
             {
-                this.MainTableBindingSource.Position = scrollState.Value;
+                if(CurrentTab != Tabs.NowPlaying) //it will be taken care of by SyncMainTableWithView if it is a NowPlaying Tab
+                    this.MainTableBindingSource.Position = scrollState.Value;
+
                 list.SelectedIndex = scrollState.Value;
             }
 
-            if(CurrentTab != Tabs.NowPlaying)
+            if (CurrentTab == Tabs.NowPlaying)
+                SyncMainTableWithView();
+            else
                 LoadImage(imageId);
 
             if (CurrentGroupingType == GroupingType.Playlists)
@@ -437,7 +504,7 @@ namespace Spotify
                                 foreach (DataRow row in table.Rows)
                                 {
                                     var playlist = row["PlaylistObject"] as IPlaylist;
-                                    row["OfflineStatus"] = GetStatusString(playlist);
+                                    row["OfflineStatus"] = GetPlaylistStatusString(playlist);
                                     row["DownloadingStatus"] = GetDownloadingStatusString(playlist);
                                     if (playlist.OfflineStatus == PlaylistOfflineStatus.Waiting || playlist.OfflineStatus == PlaylistOfflineStatus.Downloading)
                                     {
@@ -497,8 +564,11 @@ namespace Spotify
                 button1.offimage = "clearAll";
                 button1.downimage = "clearAllDown";
 
-                button2.buttonEnabled = false;
+                button2.buttonEnabled = true;
                 button3.buttonEnabled = false;
+
+                button2.offimage = ShuffleOn ? "shuffle" : "straight";
+                button2.downimage = ShuffleOn ? "shuffleDown" : "straightDown";
             }
             else if (tab == Tabs.Inbox || tab == Tabs.Playlists || tab == Tabs.Popular || tab == Tabs.Search)
             {
@@ -894,7 +964,7 @@ namespace Spotify
             if (currentTrack == null)
                 return 0.ToString();
 
-            var currentPosition = player.Position;
+            var currentPosition = player.Position + currentTrackPositionOffset;
             var totalLength = currentTrack.Duration;
             var positionPercentage = Math.Floor(currentPosition.TotalSeconds / totalLength.TotalSeconds * 100);
             if (positionPercentage > 100)
@@ -903,9 +973,10 @@ namespace Spotify
             return ((int)positionPercentage).ToString();
         }
 
+        private TimeSpan currentTrackPositionOffset = new TimeSpan(0);
         private string GetCurrentTrackPosition()
         {
-            var timespan = player.Position;
+            var timespan = player.Position + currentTrackPositionOffset;
             return string.Format(timeFormat, timespan.Minutes, timespan.Seconds);
         }
 
@@ -923,29 +994,37 @@ namespace Spotify
             if (table == null)
                 return;
 
-            switch (CurrentGroupingType)
+            if (CurrentTab == Tabs.NowPlaying)
             {
-                case GroupingType.Songs:
-                    {
-                        var tracks = table.Rows.Cast<DataRow>().Select(row => row["TrackObject"] as ITrack);
-                        AppendTracks(tracks);
-                        break;
-                    }
-                case GroupingType.Albums:
-                    {
-                        CF_displayMessage("Can't add multiple albums at once");
-                        break;
-                    }
-                case GroupingType.Artists:
-                    {
-                        CF_displayMessage("Can't add multiple artists at once");
-                        break;
-                    }
-                case GroupingType.Playlists:
-                    {
-                        CF_displayMessage("Can't add multiple playlists at once");
-                        break;
-                    }
+                ShuffleOn = !ShuffleOn;
+                SetupDynamicButtons(CurrentTab);
+            }
+            else
+            {
+                switch (CurrentGroupingType)
+                {
+                    case GroupingType.Songs:
+                        {
+                            var tracks = table.Rows.Cast<DataRow>().Select(row => row["TrackObject"] as ITrack);
+                            AppendTracks(tracks);
+                            break;
+                        }
+                    case GroupingType.Albums:
+                        {
+                            CF_displayMessage("Can't add multiple albums at once");
+                            break;
+                        }
+                    case GroupingType.Artists:
+                        {
+                            CF_displayMessage("Can't add multiple artists at once");
+                            break;
+                        }
+                    case GroupingType.Playlists:
+                        {
+                            CF_displayMessage("Can't add multiple playlists at once");
+                            break;
+                        }
+                }
             }
         }
 
@@ -965,6 +1044,7 @@ namespace Spotify
                         if (!PlayNextTrack(false))
                             StopAllPlayback();
                     }
+                    ShuffledTracks.Remove(track);
                     track.Dispose();
                     NowPlayingTable.Rows.Remove(row);
                     list.Refresh();
@@ -1001,22 +1081,33 @@ namespace Spotify
                             CF_systemCommand(CF_Actions.SHOWINFO, "Please Wait...");
                             ThreadPool.QueueUserWorkItem(delegate(object obj)
                             {
-                                using (var albumBrowser = album.Browse())
+                                try
                                 {
-                                    if (!albumBrowser.IsComplete)
+                                    using (var albumBrowser = album.Browse())
                                     {
-                                        albumBrowser.WaitForCompletion();
+                                        SleepUntilTrue(() => albumBrowser.IsComplete);
+                                        SleepUntilTrue(() => albumBrowser.Tracks.All(t => t.IsLoaded));
+
+                                        List<ITrack> tracks = new List<ITrack>();
+                                        foreach (var track in albumBrowser.Tracks)
+                                        {
+                                            if (track.IsAvailable)
+                                                tracks.Add(track);
+                                        }
+                                        this.BeginInvoke(new MethodInvoker(delegate()
+                                            {
+                                                CF_systemCommand(CF_Actions.HIDEINFO);
+                                                AppendTracks(tracks);
+                                            }));
                                     }
-                                    List<ITrack> tracks = new List<ITrack>();
-                                    foreach (var track in albumBrowser.Tracks)
-                                    {
-                                        if (track.IsAvailable)
-                                            tracks.Add(track);
-                                    }
-                                    this.BeginInvoke(new MethodInvoker(delegate()
+                                }
+                                catch (Exception ex)
+                                {
+                                    this.BeginInvoke(new MethodInvoker(() =>
                                         {
                                             CF_systemCommand(CF_Actions.HIDEINFO);
-                                            AppendTracks(tracks);
+                                            WriteError(ex);
+                                            CF_displayMessage(ex.Message);
                                         }));
                                 }
                             });
@@ -1053,6 +1144,7 @@ namespace Spotify
                     StopAllPlayback();
                     Utility.DisposeTableDisposables(NowPlayingTable);
                     NowPlayingTable.Clear();
+                    ShuffledTracks.Clear();
                     list.Refresh();
                 }
             }
@@ -1104,6 +1196,8 @@ namespace Spotify
                     }
                 }
 
+                List<ITrack> tracksToShuffle = new List<ITrack>();
+
                 foreach (var track in tracks)
                 {
                     var clonedTrack = track.Clone(SpotifySession);
@@ -1113,15 +1207,53 @@ namespace Spotify
                     newRow["Album"] = clonedTrack.Album.Name;
                     newRow["TrackObject"] = clonedTrack;
                     this.NowPlayingTable.Rows.Add(newRow);
+
+                    tracksToShuffle.Add(clonedTrack);
                 }
+
+                IEnumerable<ITrack> songsToAppend = null;
+                if (currentTrack != null)
+                {
+                    var songNode = ShuffledTracks.Find(currentTrack);
+                    if (songNode.Next != null)
+                    {
+                        //there are songs after the ones we're playing right now
+                        var trimmedPlaylist = ShuffledTracks.TakeWhile(s => s != songNode.Next.Value).ToArray();
+                        var remainder = ShuffledTracks.Where(s => !trimmedPlaylist.Contains(s)).ToArray();
+
+                        ShuffledTracks = new LinkedList<ITrack>(trimmedPlaylist);
+                        songsToAppend = tracksToShuffle.Concat(remainder).ToArray();
+                    }
+                    else
+                        songsToAppend = tracksToShuffle;
+                }
+                else
+                    songsToAppend = tracksToShuffle;
+
+                songsToAppend = ShuffleSongs(songsToAppend);
+
+                ShuffledTracks = new LinkedList<ITrack>(ShuffledTracks.Concat(songsToAppend));
 
                 CF_systemCommand(CF_Actions.CLICKSOUND);
 
                 if (currentTrack == null)
                 {
-                    PlayTrack(NowPlayingTable.Rows[0]["TrackObject"] as ITrack);
+                    if (ShuffleOn)
+                    {
+                        PlayTrack(ShuffledTracks.First.Value);
+                    }
+                    else
+                    {
+                        PlayTrack(NowPlayingTable.Rows[0]["TrackObject"] as ITrack);
+                    }
                 }
             }
+        }
+
+        private IEnumerable<ITrack> ShuffleSongs(IEnumerable<ITrack> songsLeftToPlay)
+        {
+            var r = new Random();
+            return songsLeftToPlay.OrderBy(x => r.Next()).ToArray();
         }
 
         private string GetArtistsString(IArray<IArtist> artists)

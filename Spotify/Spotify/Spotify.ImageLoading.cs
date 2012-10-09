@@ -29,10 +29,10 @@ namespace Spotify
                     try
                     {
                         var image = SpotifySession.GetImageFromId(imageId);
-                        image.WaitForLoaded();
+                        image.WaitForLoaded(); //and it's not really loaded yet :(
                         if (imageId.Equals(currentImageId))
                         {
-                            for (int i = 0; i < 10; i++)
+                            for (int i = 0; i < 60; i++)
                             {
                                 if (image.Format == sp_imageformat.SP_IMAGE_FORMAT_UNKNOWN)
                                 {
@@ -62,10 +62,14 @@ namespace Spotify
                         }
                         
                     }
-                    catch 
+                    catch (Exception ex)
                     {
-                        Console.WriteLine();
-                        return; 
+                        this.BeginInvoke(new MethodInvoker(() =>
+                        {
+                            CF_systemCommand(CF_Actions.HIDEINFO);
+                            WriteError(ex);
+                            CF_displayMessage(ex.Message);
+                        }));
                     }
                 });
             }

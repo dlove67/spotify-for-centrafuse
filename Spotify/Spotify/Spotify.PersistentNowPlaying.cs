@@ -38,10 +38,12 @@ namespace Spotify
 
                     if (currentTrack != null)
                     {
+                        var timespan = player.Position + currentTrackPositionOffset;
                         var link = currentTrack.CreateLink();
                         var currentTrackLink = link.ToString();
                         link.Dispose();
                         pnp.CurrentSong = currentTrackLink;
+                        pnp.CurrentSongPosition = timespan.TotalMilliseconds;
                     }
 
                     pnp.Save(fullPath);
@@ -75,6 +77,8 @@ namespace Spotify
 
                         NowPlayingTable = LoadTracksIntoTable(tracks);
 
+                        ShuffledTracks = new LinkedList<ITrack>(ShuffleSongs(tracks));
+
                         var trackToPlay = trackIxToPlay != -1 ? tracks[trackIxToPlay] : null;
 
                         foreach (var link in links)
@@ -84,10 +88,18 @@ namespace Spotify
 
                         this.BeginInvoke(new MethodInvoker(delegate()
                             {
-                                SwitchToTab(Tabs.NowPlaying, GroupingType.Songs, NowPlayingTable, "Now Playing", null, true, null);
+                                SwitchToTab(Tabs.NowPlaying, GroupingType.Songs, NowPlayingTable, "Now Playing", null, true);
                                 CF_systemCommand(centrafuse.Plugins.CF_Actions.HIDEINFO);
-                                if (trackToPlay != null)
+                                if (trackToPlay != null && trackToPlay.IsAvailable && !trackToPlay.IsPlaceholder)
+                                {
                                     PlayTrack(trackToPlay);
+                                    if (pnp.CurrentSongPosition > 5000)
+                                    {
+                                        //subtract 5 seconds
+                                        var seekPosition = pnp.CurrentSongPosition - 5000;
+                                        SeekCurrentTrack((int)seekPosition);
+                                    }
+                                }
                             }));
                     }
                     catch (Exception ex)

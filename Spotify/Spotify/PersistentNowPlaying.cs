@@ -24,6 +24,13 @@ namespace Spotify
             set;
         }
 
+        [XmlElement]
+        public double CurrentSongPosition
+        {
+            get;
+            set;
+        }
+
         public void Save(string path)
         {
             XmlSerializer serializer = new XmlSerializer(typeof(PersistentNowPlaying));

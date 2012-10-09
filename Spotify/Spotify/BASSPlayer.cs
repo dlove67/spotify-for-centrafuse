@@ -39,10 +39,7 @@ namespace Spotify
 
         private int Reader(int handle, IntPtr buffer, int length, IntPtr user)
         {
-            if (Paused)
-                return 0;
-            else
-                return basbuffer.Read(buffer, length, user.ToInt32());
+            return basbuffer.Read(buffer, length, user.ToInt32());
         }
 
         public void Stop()
@@ -55,10 +52,25 @@ namespace Spotify
                 Bass.BASS_ChannelSetPosition(channel, 0);
         }
 
+        private bool _paused = false;
         public bool Paused
         {
-            get;
-            set;
+            get
+            {
+                return _paused;
+            }
+            set
+            {
+                _paused = value;
+                if (_paused)
+                {
+                    Bass.BASS_ChannelPause(channel);
+                }
+                else
+                {
+                    Bass.BASS_ChannelPlay(channel, false);
+                }
+            }
         }
 
         public TimeSpan Position
