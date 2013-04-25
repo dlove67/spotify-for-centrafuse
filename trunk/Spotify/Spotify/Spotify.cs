@@ -198,7 +198,7 @@ namespace Spotify
                                     if (!albumBrowser.IsComplete)
                                     {
                                         CF_systemCommand(CF_Actions.SHOWINFO, "Please wait...");
-                                        albumBrowser.WaitForCompletion();
+                                        SleepUntilTrue(() => albumBrowser.IsComplete);
                                         CF_systemCommand(CF_Actions.HIDEINFO);
                                     }
 
@@ -1205,6 +1205,7 @@ namespace Spotify
                     newRow["Name"] = clonedTrack.Name;
                     newRow["Artist"] = GetArtistsString(clonedTrack.Artists);
                     newRow["Album"] = clonedTrack.Album.Name;
+                    newRow["Starred"] = GetStarredStatusString(clonedTrack.IsStarred);
                     newRow["TrackObject"] = clonedTrack;
                     this.NowPlayingTable.Rows.Add(newRow);
 
