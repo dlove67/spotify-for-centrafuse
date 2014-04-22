@@ -86,7 +86,7 @@ namespace Spotify
                             link.Dispose();
                         }
 
-                        this.BeginInvoke(new MethodInvoker(delegate()
+                        this.ParentForm.BeginInvoke(new MethodInvoker(delegate()
                             {
                                 SwitchToTab(Tabs.NowPlaying, GroupingType.Songs, NowPlayingTable, "Now Playing", null, true);
                                 CF_systemCommand(centrafuse.Plugins.CF_Actions.HIDEINFO);
@@ -104,7 +104,7 @@ namespace Spotify
                     }
                     catch (Exception ex)
                     {
-                        this.BeginInvoke(new MethodInvoker(delegate()
+                        this.ParentForm.BeginInvoke(new MethodInvoker(delegate()
                             {
                                 CF_systemDisplayDialog(centrafuse.Plugins.CF_Dialogs.OkBox, "Failed to restore \"Now Playing\" list: " + ex.Message);
                                 CF_systemCommand(centrafuse.Plugins.CF_Actions.HIDEINFO);

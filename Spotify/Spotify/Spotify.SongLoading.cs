@@ -32,7 +32,7 @@ namespace Spotify
                     }
                     catch (Exception ex)
                     {
-                        this.BeginInvoke(new MethodInvoker(() =>
+                        this.ParentForm.BeginInvoke(new MethodInvoker(() =>
                         {
                             CF_systemCommand(CF_Actions.HIDEINFO);
                             WriteError(ex);
@@ -42,8 +42,8 @@ namespace Spotify
                     }
                     
                     var table = LoadTracksIntoTable(inboxTracks);
-                    
-                    this.BeginInvoke(new MethodInvoker(delegate()
+
+                    this.ParentForm.BeginInvoke(new MethodInvoker(delegate()
                     {
                         CF_systemCommand(CF_Actions.HIDEINFO);
                         SwitchToTab(Tabs.Inbox, GroupingType.Songs, table, "Inbox Songs", null,  true);
@@ -73,7 +73,7 @@ namespace Spotify
                         }
                         catch (Exception ex)
                         {
-                            this.BeginInvoke(new MethodInvoker(delegate()
+                            this.ParentForm.BeginInvoke(new MethodInvoker(delegate()
                             {
                                 CF_systemCommand(CF_Actions.HIDEINFO);
                                 CF_displayMessage(ex.Message);
@@ -92,7 +92,7 @@ namespace Spotify
 
                         var table = LoadPlaylistsIntoTable(playlists);
 
-                        this.BeginInvoke(new MethodInvoker(delegate()
+                        this.ParentForm.BeginInvoke(new MethodInvoker(delegate()
                         {
                             CF_systemCommand(CF_Actions.HIDEINFO);
                             SwitchToTab(Tabs.Inbox, GroupingType.Playlists, table, "Inbox Playlists", null, true);
@@ -100,7 +100,7 @@ namespace Spotify
                     }
                     catch (Exception ex)
                     {
-                        this.BeginInvoke(new MethodInvoker(() =>
+                        this.ParentForm.BeginInvoke(new MethodInvoker(() =>
                         {
                             CF_systemCommand(CF_Actions.HIDEINFO);
                             WriteError(ex);
@@ -133,7 +133,7 @@ namespace Spotify
                         }
                         catch (Exception ex)
                         {
-                            this.BeginInvoke(new MethodInvoker(delegate()
+                            this.ParentForm.BeginInvoke(new MethodInvoker(delegate()
                             {
                                 CF_systemCommand(CF_Actions.HIDEINFO);
                                 CF_displayMessage(ex.Message);
@@ -168,7 +168,7 @@ namespace Spotify
 
                         var table = LoadAlbumsIntoTable(albums, true);
 
-                        this.BeginInvoke(new MethodInvoker(delegate()
+                        this.ParentForm.BeginInvoke(new MethodInvoker(delegate()
                         {
                             CF_systemCommand(CF_Actions.HIDEINFO);
                             SwitchToTab(Tabs.Inbox, GroupingType.Albums, table, "Inbox Albums", null, true);
@@ -176,7 +176,7 @@ namespace Spotify
                     }
                     catch (Exception ex)
                     {
-                        this.BeginInvoke(new MethodInvoker(() =>
+                        this.ParentForm.BeginInvoke(new MethodInvoker(() =>
                         {
                             CF_systemCommand(CF_Actions.HIDEINFO);
                             WriteError(ex);
@@ -208,7 +208,7 @@ namespace Spotify
                         }
                         catch (Exception ex)
                         {
-                            this.BeginInvoke(new MethodInvoker(delegate()
+                            this.ParentForm.BeginInvoke(new MethodInvoker(delegate()
                             {
                                 CF_systemCommand(CF_Actions.HIDEINFO);
                                 CF_displayMessage(ex.Message);
@@ -219,7 +219,7 @@ namespace Spotify
 
                         var table = LoadTracksIntoTable(starredTracks);
 
-                        this.BeginInvoke(new MethodInvoker(delegate()
+                        this.ParentForm.BeginInvoke(new MethodInvoker(delegate()
                         {
                             CF_systemCommand(CF_Actions.HIDEINFO);
                             SwitchToTab(Tabs.Popular, GroupingType.Songs, table, "Starred tracks", null, true);
@@ -227,7 +227,7 @@ namespace Spotify
                     }
                     catch (Exception ex)
                     {
-                        this.BeginInvoke(new MethodInvoker(() =>
+                        this.ParentForm.BeginInvoke(new MethodInvoker(() =>
                         {
                             CF_systemCommand(CF_Actions.HIDEINFO);
                             WriteError(ex);
@@ -258,7 +258,7 @@ namespace Spotify
                         }
                         catch (Exception ex)
                         {
-                            this.BeginInvoke(new MethodInvoker(delegate()
+                            this.ParentForm.BeginInvoke(new MethodInvoker(delegate()
                             {
                                 CF_systemCommand(CF_Actions.HIDEINFO);
                                 CF_displayMessage(ex.Message);
@@ -269,7 +269,7 @@ namespace Spotify
 
                         var table = LoadPlaylistsIntoTable(playlists);
 
-                        this.BeginInvoke(new MethodInvoker(delegate()
+                        this.ParentForm.BeginInvoke(new MethodInvoker(delegate()
                         {
                             CF_systemCommand(CF_Actions.HIDEINFO);
                             SwitchToTab(Tabs.Playlists, GroupingType.Playlists, table, "Playlists", null, true);
@@ -277,7 +277,7 @@ namespace Spotify
                     }
                     catch (Exception ex)
                     {
-                        this.BeginInvoke(new MethodInvoker(() =>
+                        this.ParentForm.BeginInvoke(new MethodInvoker(() =>
                         {
                             CF_systemCommand(CF_Actions.HIDEINFO);
                             WriteError(ex);
@@ -317,7 +317,7 @@ namespace Spotify
                         }
                         catch (Exception ex)
                         {
-                            this.BeginInvoke(new MethodInvoker(delegate()
+                            this.ParentForm.BeginInvoke(new MethodInvoker(delegate()
                             {
                                 CF_systemCommand(CF_Actions.HIDEINFO);
                                 CF_displayMessage(ex.Message);
@@ -328,7 +328,7 @@ namespace Spotify
 
                         var table = LoadTracksIntoTable(popularTracks);
 
-                        this.BeginInvoke(new MethodInvoker(delegate()
+                        this.ParentForm.BeginInvoke(new MethodInvoker(delegate()
                         {
                             CF_systemCommand(CF_Actions.HIDEINFO);
                             SwitchToTab(Tabs.Popular, GroupingType.Songs, table, "Popular tracks", null, true);
@@ -336,7 +336,7 @@ namespace Spotify
                     }
                     catch (Exception ex)
                     {
-                        this.BeginInvoke(new MethodInvoker(() =>
+                        this.ParentForm.BeginInvoke(new MethodInvoker(() =>
                         {
                             CF_systemCommand(CF_Actions.HIDEINFO);
                             WriteError(ex);
@@ -363,7 +363,7 @@ namespace Spotify
                         }
                         catch (Exception ex)
                         {
-                            this.BeginInvoke(new MethodInvoker(delegate()
+                            this.ParentForm.BeginInvoke(new MethodInvoker(delegate()
                             {
                                 CF_systemCommand(CF_Actions.HIDEINFO);
                                 CF_displayMessage(ex.Message);
@@ -374,7 +374,7 @@ namespace Spotify
 
                         var table = LoadAlbumsIntoTable(popularAlbums, false);
 
-                        this.BeginInvoke(new MethodInvoker(delegate()
+                        this.ParentForm.BeginInvoke(new MethodInvoker(delegate()
                         {
                             CF_systemCommand(CF_Actions.HIDEINFO);
                             SwitchToTab(Tabs.Popular, GroupingType.Albums, table, "Popular albums", null, true);
@@ -382,7 +382,7 @@ namespace Spotify
                     }
                     catch (Exception ex)
                     {
-                        this.BeginInvoke(new MethodInvoker(() =>
+                        this.ParentForm.BeginInvoke(new MethodInvoker(() =>
                         {
                             CF_systemCommand(CF_Actions.HIDEINFO);
                             WriteError(ex);
@@ -409,7 +409,7 @@ namespace Spotify
                         }
                         catch (Exception ex)
                         {
-                            this.BeginInvoke(new MethodInvoker(delegate()
+                            this.ParentForm.BeginInvoke(new MethodInvoker(delegate()
                             {
                                 CF_systemCommand(CF_Actions.HIDEINFO);
                                 CF_displayMessage(ex.Message);
@@ -420,7 +420,7 @@ namespace Spotify
 
                         var table = LoadArtistsIntoTable(popularArtists);
 
-                        this.BeginInvoke(new MethodInvoker(delegate()
+                        this.ParentForm.BeginInvoke(new MethodInvoker(delegate()
                         {
                             CF_systemCommand(CF_Actions.HIDEINFO);
                             SwitchToTab(Tabs.Popular, GroupingType.Artists, table, "Popular artists", null, true);
@@ -428,7 +428,7 @@ namespace Spotify
                     }
                     catch (Exception ex)
                     {
-                        this.BeginInvoke(new MethodInvoker(() =>
+                        this.ParentForm.BeginInvoke(new MethodInvoker(() =>
                         {
                             CF_systemCommand(CF_Actions.HIDEINFO);
                             WriteError(ex);
@@ -469,7 +469,7 @@ namespace Spotify
                             search.Dispose();
                             var table = LoadTracksIntoTable(tracks);
 
-                            this.BeginInvoke(new MethodInvoker(delegate()
+                            this.ParentForm.BeginInvoke(new MethodInvoker(delegate()
                             {
                                 CF_systemCommand(CF_Actions.HIDEINFO);
                                 SwitchToTab(Tabs.Search, GroupingType.Songs, table, "Search", null, true);
@@ -477,7 +477,7 @@ namespace Spotify
                         }
                         catch (Exception ex)
                         {
-                            this.BeginInvoke(new MethodInvoker(() =>
+                            this.ParentForm.BeginInvoke(new MethodInvoker(() =>
                             {
                                 CF_systemCommand(CF_Actions.HIDEINFO);
                                 WriteError(ex);
@@ -519,7 +519,7 @@ namespace Spotify
                             search.Dispose();
                             var table = LoadAlbumsIntoTable(albums, false);
 
-                            this.BeginInvoke(new MethodInvoker(delegate()
+                            this.ParentForm.BeginInvoke(new MethodInvoker(delegate()
                             {
                                 CF_systemCommand(CF_Actions.HIDEINFO);
                                 SwitchToTab(Tabs.Search, GroupingType.Albums, table, "Search", null, true);
@@ -527,7 +527,7 @@ namespace Spotify
                         }
                         catch (Exception ex)
                         {
-                            this.BeginInvoke(new MethodInvoker(() =>
+                            this.ParentForm.BeginInvoke(new MethodInvoker(() =>
                             {
                                 CF_systemCommand(CF_Actions.HIDEINFO);
                                 WriteError(ex);
@@ -566,7 +566,7 @@ namespace Spotify
                             search.Dispose();
                             var table = LoadArtistsIntoTable(artists);
 
-                            this.BeginInvoke(new MethodInvoker(delegate()
+                            this.ParentForm.BeginInvoke(new MethodInvoker(delegate()
                             {
                                 CF_systemCommand(CF_Actions.HIDEINFO);
                                 SwitchToTab(Tabs.Search, GroupingType.Artists, table, "Search", null, true);
@@ -574,7 +574,7 @@ namespace Spotify
                         }
                         catch (Exception ex)
                         {
-                            this.BeginInvoke(new MethodInvoker(() =>
+                            this.ParentForm.BeginInvoke(new MethodInvoker(() =>
                             {
                                 CF_systemCommand(CF_Actions.HIDEINFO);
                                 WriteError(ex);
@@ -614,7 +614,7 @@ namespace Spotify
 
                             var table = LoadPlaylistsIntoTable(playlists);
 
-                            this.BeginInvoke(new MethodInvoker(delegate()
+                            this.ParentForm.BeginInvoke(new MethodInvoker(delegate()
                             {
                                 CF_systemCommand(CF_Actions.HIDEINFO);
                                 SwitchToTab(Tabs.Search, GroupingType.Playlists, table, "Search", null, true);
@@ -622,7 +622,7 @@ namespace Spotify
                         }
                         catch (Exception ex)
                         {
-                            this.BeginInvoke(new MethodInvoker(() =>
+                            this.ParentForm.BeginInvoke(new MethodInvoker(() =>
                             {
                                 CF_systemCommand(CF_Actions.HIDEINFO);
                                 WriteError(ex);

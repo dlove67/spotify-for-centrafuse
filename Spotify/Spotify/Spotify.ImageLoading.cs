@@ -46,7 +46,7 @@ namespace Spotify
                             if (imageId.Equals(currentImageId))
                             {
                                 imageObject = ResizeToFitBox(imageObject);
-                                this.BeginInvoke(new MethodInvoker(delegate()
+                                this.ParentForm.BeginInvoke(new MethodInvoker(delegate()
                                 {
                                     if (imageId.Equals(currentImageId))
                                     {
@@ -64,7 +64,7 @@ namespace Spotify
                     }
                     catch (Exception ex)
                     {
-                        this.BeginInvoke(new MethodInvoker(() =>
+                        this.ParentForm.BeginInvoke(new MethodInvoker(() =>
                         {
                             CF_systemCommand(CF_Actions.HIDEINFO);
                             WriteError(ex);

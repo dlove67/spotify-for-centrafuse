@@ -77,20 +77,23 @@ namespace Spotify
 
         private BindingSource MainTableBindingSource;
         private DataTable NowPlayingTable;
+        private System.Windows.Forms.Timer PlaybackMonitor = new System.Windows.Forms.Timer();
 
         public Spotify()
         {
             MainTableBindingSource = new BindingSource();
             NowPlayingTable = LoadTracksIntoTable(new ITrack[] { });
+            PlaybackMonitor.Interval = 300;
+            PlaybackMonitor.Tick += PlaybackMonitor_Tick;
         }
-
+        
         public override void CF_pluginInit()
         {
             this.CF3_initPlugin(PLUGIN_NAME, true);
 
             this.CF_localskinsetup();
 
-            this.CF_params.pauseAudio = true;
+            this.CF_params.Media.isAudioPlugin = true;
 
             this.CF_events.trackPositionChanged += new CFTrackPositionChangedEventHandler(CF_events_trackPositionChanged);
         }
@@ -100,6 +103,10 @@ namespace Spotify
             if (currentTrack != null)
             {
                 var percentage = e.Percentage();
+                
+                if (percentage < 0)
+                    return;
+
                 double fraction = (double)percentage / 100;
                 var offset = (int)(currentTrack.Duration.TotalMilliseconds * fraction);
                 SeekCurrentTrack(offset);
@@ -116,8 +123,9 @@ namespace Spotify
             list.LongClick += new EventHandler<CFControlsExtender.Listview.ItemArgs>(list_LongClick);
             list.LinkedItemClick += new EventHandler<CFControlsExtender.Listview.LinkedItemArgs>(list_LinkedItemClick);
             SwitchToTab(Tabs.NowPlaying, GroupingType.Songs, NowPlayingTable, "Now Playing", null, false);
+            
         }
-
+        
         void list_LinkedItemClick(object sender, CFControlsExtender.Listview.LinkedItemArgs e)
         {
             switch (e.LinkId)
@@ -139,7 +147,7 @@ namespace Spotify
                                 {
                                     SleepUntilTrue(() => track.IsStarred == newValue);
 
-                                    this.BeginInvoke(new MethodInvoker(() =>
+                                    this.ParentForm.BeginInvoke(new MethodInvoker(() =>
                                     {
                                         this.CF_systemCommand(CF_Actions.HIDEINFO);
 
@@ -155,7 +163,7 @@ namespace Spotify
                                 }
                                 catch (Exception ex)
                                 {
-                                    this.BeginInvoke(new MethodInvoker(() =>
+                                    this.ParentForm.BeginInvoke(new MethodInvoker(() =>
                                         {
                                             CF_systemCommand(CF_Actions.HIDEINFO);
                                             WriteError(ex);
@@ -609,6 +617,11 @@ namespace Spotify
         {
             base.CF_pluginShow();
             _hasControl = true;
+            InitSpotifyClient();
+        }
+
+        private void InitSpotifyClient()
+        {
             if (SpotifySession == null)
             {
                 LoadSettings();
@@ -623,7 +636,7 @@ namespace Spotify
                     CF_displayMessage("Username not specified");
                     return;
                 }
-                
+
                 CF_systemCommand(CF_Actions.SHOWINFO, "Connecting to Spotify");
                 try
                 {
@@ -697,6 +710,7 @@ namespace Spotify
 
         public override void CF_pluginClose()
         {
+            PlaybackMonitor.Stop();
             if (SpotifySession != null)
             {
                 SaveNowPlayingToFile();
@@ -1094,7 +1108,7 @@ namespace Spotify
                                             if (track.IsAvailable)
                                                 tracks.Add(track);
                                         }
-                                        this.BeginInvoke(new MethodInvoker(delegate()
+                                        this.ParentForm.BeginInvoke(new MethodInvoker(delegate()
                                             {
                                                 CF_systemCommand(CF_Actions.HIDEINFO);
                                                 AppendTracks(tracks);
@@ -1103,7 +1117,7 @@ namespace Spotify
                                 }
                                 catch (Exception ex)
                                 {
-                                    this.BeginInvoke(new MethodInvoker(() =>
+                                    this.ParentForm.BeginInvoke(new MethodInvoker(() =>
                                         {
                                             CF_systemCommand(CF_Actions.HIDEINFO);
                                             WriteError(ex);
@@ -1301,7 +1315,7 @@ namespace Spotify
 
                 if (returnvalue == DialogResult.OK)
                 {
-                    if(LoadSettings() && (SpotifySession.ConnectionState & sp_connectionstate.LOGGED_IN) > 0)
+                    if(LoadSettings() && SpotifySession != null && (SpotifySession.ConnectionState & sp_connectionstate.LOGGED_IN) > 0)
                     {
                         //settings changed, reconnect
                         SpotifySession.Logout();
@@ -1369,6 +1383,14 @@ namespace Spotify
             }
 
             return retValue;
+        }
+
+        public Form ParentForm
+        {
+            get
+            {
+                return this.MainForm as Form;
+            }
         }
     }
 

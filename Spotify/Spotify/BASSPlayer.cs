@@ -12,44 +12,42 @@ namespace Spotify
         {
             Paused = true;
         }
-        private BASSBuffer basbuffer = null;
-        private STREAMPROC streamproc = null;
-        private int channel;
-
+        
+        private int channel = -1;
         public int EnqueueSamples(int channels, int rate, byte[] samples, int frames)
         {
-            int consumed = 0;
-            if (basbuffer == null)
+            if (stopped)
             {
-                Bass.BASS_Init(-1, rate, BASSInit.BASS_DEVICE_DEFAULT, IntPtr.Zero);
-                basbuffer = new BASSBuffer(0.5f, rate, channels, 2);
-                streamproc = new STREAMPROC(Reader);
-                channel = Bass.BASS_StreamCreate(rate, channels, BASSFlag.BASS_DEFAULT, streamproc, IntPtr.Zero);
+                return frames; //should we return 0? this means frames will be actively dropped
+            }
+
+            if (channel == -1)
+            {
+                channel = Bass.BASS_StreamCreate(rate, channels, BASSFlag.BASS_DEFAULT, BASSStreamProc.STREAMPROC_PUSH);
                 Bass.BASS_ChannelPlay(channel, false);
             }
 
-            if (basbuffer.Space(0) > samples.Length)
-            {
-                basbuffer.Write(samples, samples.Length);
-                consumed = frames;
-            }
+            if (channel != -1)
+                Bass.BASS_StreamPutData(channel, samples, samples.Length); //data will always be queued up, never dropped
 
-            return consumed;
+            return frames;
         }
 
-        private int Reader(int handle, IntPtr buffer, int length, IntPtr user)
-        {
-            return basbuffer.Read(buffer, length, user.ToInt32());
-        }
-
+        private bool stopped = true;
         public void Stop()
         {
-            if (basbuffer != null)
+            if (channel != -1)
             {
-                basbuffer.Clear();
+                Bass.BASS_ChannelStop(channel);
+                Bass.BASS_StreamFree(channel);
+                channel = -1;
+                stopped = true;
             }
-            if(channel != 0)
-                Bass.BASS_ChannelSetPosition(channel, 0);
+        }
+
+        public void ReadyPlay()
+        {
+            stopped = false;
         }
 
         private bool _paused = false;

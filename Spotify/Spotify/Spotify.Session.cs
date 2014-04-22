@@ -26,7 +26,7 @@ namespace Spotify
 
         void session_PlayTokenLost(ISession sender, SessionEventArgs e)
         {
-            this.BeginInvoke(new MethodInvoker(delegate()
+            this.ParentForm.BeginInvoke(new MethodInvoker(delegate()
                 {
                     CF_displayMessage("Play token lost! What do we do???" + Environment.NewLine + e.Status.ToString() + Environment.NewLine + e.Message);
                 }));
@@ -34,7 +34,7 @@ namespace Spotify
 
         void session_Exception(ISession sender, SessionEventArgs e)
         {
-            this.BeginInvoke(new MethodInvoker(delegate()
+            this.ParentForm.BeginInvoke(new MethodInvoker(delegate()
                 {
                     WriteError(e.Message);
                     CF_displayMessage(e.Status.ToString() + Environment.NewLine + e.Message);
@@ -48,7 +48,7 @@ namespace Spotify
 
         void session_MessageToUser(ISession sender, SessionEventArgs e)
         {
-            this.BeginInvoke(new MethodInvoker(delegate()
+            this.ParentForm.BeginInvoke(new MethodInvoker(delegate()
                 {
                     CF_displayMessage(e.Message);
                 }));
@@ -57,7 +57,7 @@ namespace Spotify
         bool loginComplete = false;
         void session_LoginComplete(ISession sender, SessionEventArgs e)
         {
-            this.BeginInvoke(new MethodInvoker(() =>
+            this.ParentForm.BeginInvoke(new MethodInvoker(() =>
                 {
                     if (e.Status != sp_error.OK)
                     {
@@ -73,7 +73,7 @@ namespace Spotify
         bool firstLogin = true;
         private void OnLoginComplete()
         {
-            this.BeginInvoke(new MethodInvoker(delegate()
+            this.ParentForm.BeginInvoke(new MethodInvoker(delegate()
                 {
                     loginComplete = true;
                     CF_systemCommand(centrafuse.Plugins.CF_Actions.HIDEINFO);
