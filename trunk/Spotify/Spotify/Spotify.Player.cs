@@ -35,20 +35,29 @@ namespace Spotify
         {
             session.StreamingError += new SessionEventHandler(session_StreamingError);
             session.MusicDeliver += new MusicDeliveryEventHandler(session_MusicDeliver);
-            session.EndOfTrack += new SessionEventHandler(session_EndOfTrack);
         }
 
-        void session_EndOfTrack(ISession sender, SessionEventArgs e)
+        void PlaybackMonitor_Tick(object sender, EventArgs e)
         {
-            this.BeginInvoke(new MethodInvoker(delegate()
+            if (currentTrack == null)
+                throw new Exception("Playback monitor started, but no track playing");
+
+            var position = player.Position + currentTrackPositionOffset;
+            var duration = currentTrack.Duration;
+
+            if (position >= duration)
+            {
+                this.ParentForm.BeginInvoke(new MethodInvoker(delegate()
                 {
                     if (!PlayNextTrack(false))
                     {
                         currentTrack = null;
                         SpotifySession.PlayerUnload();
                         isPaused = false;
+                        currentTrackPositionOffset = new TimeSpan(0);
                     }
                 }));
+            }
         }
 
         /// <summary>
@@ -145,20 +154,24 @@ namespace Spotify
             {
                 SpotifySession.PlayerUnload();
                 player.Stop();
+                PlaybackMonitor.Stop();
             }
             currentTrackPositionOffset = new TimeSpan(0);
             var result = SpotifySession.PlayerLoad(track);
+            player.ReadyPlay();
             SpotifySession.PlayerPlay();
             isPaused = false;
             player.Paused = false;
             currentTrack = track;
             SyncMainTableWithView();
+            PlaybackMonitor.Start();
         }
 
         private void SeekCurrentTrack(int milliseconds)
         {
             player.Stop();
             currentTrackPositionOffset = new TimeSpan(0, 0, 0, 0, milliseconds);
+            player.ReadyPlay();
             SpotifySession.PlayerSeek(milliseconds);
         }
 
@@ -169,6 +182,7 @@ namespace Spotify
             isPaused = false;
             currentTrackPositionOffset = new TimeSpan(0);
             player.Stop();
+            PlaybackMonitor.Stop();
         }
 
         void session_MusicDeliver(ISession sender, MusicDeliveryEventArgs e)
@@ -178,7 +192,7 @@ namespace Spotify
 
         void session_StreamingError(ISession sender, SessionEventArgs e)
         {
-            this.BeginInvoke(new MethodInvoker(delegate()
+            this.ParentForm.BeginInvoke(new MethodInvoker(delegate()
                 {
                     WriteError(e.Message);
                     CF_displayMessage("Streaming Error:" + Environment.NewLine + e.Message);
@@ -202,9 +216,10 @@ namespace Spotify
 
         private void Play()
         {
+            player.ReadyPlay();
+            player.Paused = false;
             SpotifySession.PlayerPlay();
             isPaused = false;
-            player.Paused = false;
             CF_setPlayPauseButton(false, _zone);
         }
 
