@@ -125,6 +125,7 @@
     <None Include="images\main - new.psd" />
     <None Include="images\main.psd" />
     <None Include="images\multiple choice dialog.psd" />
+    <None Include="spotify.cfapp" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="cfapp.xml">
