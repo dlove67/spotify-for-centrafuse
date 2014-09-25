@@ -64,12 +64,7 @@ namespace Spotify
                     }
                     catch (Exception ex)
                     {
-                        this.ParentForm.BeginInvoke(new MethodInvoker(() =>
-                        {
-                            CF_systemCommand(CF_Actions.HIDEINFO);
-                            WriteError(ex);
-                            CF_displayMessage(ex.Message);
-                        }));
+                        WriteError(ex);
                     }
                 });
             }
