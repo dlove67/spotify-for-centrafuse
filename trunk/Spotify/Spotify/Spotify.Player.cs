@@ -53,6 +53,8 @@ namespace Spotify
                     {
                         currentTrack = null;
                         SpotifySession.PlayerUnload();
+                        PlaybackMonitor.Stop();
+                        player.Stop();
                         isPaused = false;
                         currentTrackPositionOffset = new TimeSpan(0);
                     }
