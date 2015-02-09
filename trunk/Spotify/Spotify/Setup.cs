@@ -54,7 +54,10 @@ namespace Spotify
                 ButtonText[CFSetupButton.Four] = this.pluginLang.ReadField("/APPLANG/SETUP/BITRATE");
                 ButtonValue[CFSetupButton.Four] = GetBitrateString();
 
-               
+                //[GrantA] Auto play music boolean button.
+                ButtonHandler[CFSetupButton.Five] = new CFSetupHandler(SetAutoPlay);
+                ButtonText[CFSetupButton.Five] = this.pluginLang.ReadField("/APPLANG/SETUP/AUTOPLAY");
+                ButtonValue[CFSetupButton.Five] = GetAutoPlayString();               
             }
             catch (Exception errmsg) { CFTools.writeError(errmsg.Message, errmsg.StackTrace); }
         }
@@ -180,6 +183,33 @@ namespace Spotify
 
             }
             catch (Exception errmsg) { CFTools.writeError(errmsg.Message, errmsg.StackTrace); }
+        }
+
+        /// <summary>
+        /// [GrantA] Returns auto play music on show boolean string of "True" or "False", or if not set then "False". 
+        /// </summary>
+        /// <returns>Boolean</returns>
+        private string GetAutoPlayString()
+        {
+            string autoPlayString = this.pluginConfig.ReadField("/APPCONFIG/AUTOPLAY");
+
+            if (string.IsNullOrEmpty(autoPlayString))
+            {
+                return "False";
+            }
+            else
+            {
+                return autoPlayString;
+            }
+        }
+
+        /// <summary>
+        /// [GrantA] Writes auto play music on show boolean setting.
+        /// </summary>
+        /// <param name="value">"True" or "False"</param>
+        private void SetAutoPlay(ref object value)
+        {
+            this.pluginConfig.WriteField("/APPCONFIG/AUTOPLAY", value.ToString());
         }
     }
 }

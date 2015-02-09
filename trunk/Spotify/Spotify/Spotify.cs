@@ -20,6 +20,7 @@ namespace Spotify
         private string username;
         private string password;
         private string tempPath;
+        private Boolean autoPlay;
         private sp_bitrate preferredBitrate;
         private const string userAgent = "SpotiFire";
         #endregion
@@ -618,6 +619,12 @@ namespace Spotify
             base.CF_pluginShow();
             _hasControl = true;
             InitSpotifyClient();
+
+            //[GrantA] Auto play music on show.
+            if (currentTrack != null && isPaused && autoPlay)
+            {
+                Play();
+            }
         }
 
         private void InitSpotifyClient()
@@ -704,8 +711,8 @@ namespace Spotify
         {
             _hasControl = true;
 
-            if (currentTrack != null && isPaused)
-                Play();
+            //if (currentTrack != null && isPaused)
+            //    Play();
         }
 
         public override void CF_pluginClose()
@@ -1380,6 +1387,17 @@ namespace Spotify
                 {
                     preferredBitrate = sp_bitrate.BITRATE_160k;
                 }
+            }
+
+            //[GrantA] Load music auto play setting.
+            string newAutoPlay = this.pluginConfig.ReadField("/APPCONFIG/AUTOPLAY");
+            if (newAutoPlay.Equals("True"))
+            {
+                autoPlay = true;
+            }
+            else
+            {
+                autoPlay = false;
             }
 
             return retValue;

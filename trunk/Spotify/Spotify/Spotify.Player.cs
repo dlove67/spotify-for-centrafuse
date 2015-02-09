@@ -160,10 +160,7 @@ namespace Spotify
             }
             currentTrackPositionOffset = new TimeSpan(0);
             var result = SpotifySession.PlayerLoad(track);
-            player.ReadyPlay();
-            SpotifySession.PlayerPlay();
-            isPaused = false;
-            player.Paused = false;
+            Play();
             currentTrack = track;
             SyncMainTableWithView();
             PlaybackMonitor.Start();
