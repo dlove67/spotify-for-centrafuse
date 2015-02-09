@@ -99,6 +99,12 @@ namespace Spotify
                                         var seekPosition = pnp.CurrentSongPosition - 5000;
                                         SeekCurrentTrack((int)seekPosition);
                                     }
+
+                                    //[Grant] Pause after restore if auto play is disabled.
+                                    if (!autoPlay)
+                                    {
+                                        Pause();
+                                    }
                                 }
                             }));
                     }

@@ -7,6 +7,7 @@
     <USERNAME>User Name</USERNAME>
     <PASSWORD>Password</PASSWORD>
     <BITRATE>Preferred Bitrate</BITRATE>
+    <AUTOPLAY>Auto Play On Show</AUTOPLAY>
     <LOCATION>Spotify data folder location</LOCATION>
   </SETUP>
 </APPLANG>
